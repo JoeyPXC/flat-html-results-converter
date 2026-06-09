@@ -428,6 +428,7 @@ body { font-family: 'Inter', sans-serif; }
 <script>
 let currentParsedSections = null;
 let lastDetectedSource = '';
+let populatingHeaders = false; // true only during initial file/paste load; prevents re-parse from overwriting user edits
 
 function setSourceBadge(label) {
   lastDetectedSource = label;
@@ -822,20 +823,25 @@ function estimateColumns(headerLine) {
 }
 
 function parseAthMeet(raw) {
-  if (raw.toLowerCase().includes("<center>") || raw.toLowerCase().includes("<h1>")) {
+  if (populatingHeaders && (raw.toLowerCase().includes("<center>") || raw.toLowerCase().includes("<h1>"))) {
     try {
       const parser = new DOMParser();
       const doc = parser.parseFromString(raw, "text/html");
       const h1Text = doc.querySelector("h1")?.textContent?.trim();
-      const h2Text = doc.querySelector("h2")?.textContent?.trim();
+      const h2Els  = [...doc.querySelectorAll("h2")].map(el => el.textContent.trim()).filter(Boolean);
       const h3Text = doc.querySelector("h3")?.textContent?.trim();
       if (h1Text) document.getElementById('meetTitle').value = h1Text;
-      if (h2Text) {
-        const dateMatch = h2Text.match(/(\w+\s+\d{1,2},\s*\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4})/);
-        if (dateMatch) {
+      // Walk each h2: first date-like value -> meetDate, first non-date -> meetVenue
+      const _datePattern = /([A-Za-z]+\.?\s+\d{1,2},\s*\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4})/;
+      for (const h2Text of h2Els) {
+        const dateMatch = h2Text.match(_datePattern);
+        if (dateMatch && !document.getElementById('meetDate').value) {
           document.getElementById('meetDate').value = dateMatch[1];
-          document.getElementById('meetVenue').value = h2Text.replace(dateMatch[1], '').replace(/^[,\s-]+|[,\s-]+$/g, '').trim();
-        } else {
+          const leftover = h2Text.replace(dateMatch[1], '').replace(/^[,\s-]+|[,\s-]+$/g, '').trim();
+          if (leftover && !document.getElementById('meetVenue').value) {
+            document.getElementById('meetVenue').value = leftover;
+          }
+        } else if (!dateMatch && !document.getElementById('meetVenue').value) {
           document.getElementById('meetVenue').value = h2Text;
         }
       }
@@ -1037,7 +1043,7 @@ function parseAthMeet(raw) {
         // Skip lines that are just numbers or times
         if (/^\d+[:\.]\d+/.test(line)) continue;
         // A date line — grab it
-        const dateMatch = line.match(/(\w+\s+\d{1,2},\s*\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4})/);
+        const dateMatch = line.match(/([A-Za-z]+\.?\s+\d{1,2},\s*\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4})/);
         if (dateMatch) {
           if (!dateEl.value) dateEl.value = dateMatch[1];
           const remainder = line.replace(dateMatch[1], '').replace(/^[,\s-]+|[,\s-]+$/g, '').trim();
@@ -1269,7 +1275,7 @@ function parseAthMeet(raw) {
       for (const line of firstLines) {
         if (/^(Men|Women|PL|PLACE|NAME|TEAM)/i.test(line)) continue;
         if (/^\d+[:\.]\d+/.test(line)) continue;
-        const dateMatch = line.match(/(\w+\s+\d{1,2},\s*\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4})/);
+        const dateMatch = line.match(/([A-Za-z]+\.?\s+\d{1,2},\s*\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4})/);
         if (dateMatch) {
           if (!dateEl.value) dateEl.value = dateMatch[1];
           const remainder = line.replace(dateMatch[1],'').replace(/^[,\s-]+|[,\s-]+$/g,'').trim();
@@ -2677,9 +2683,9 @@ function buildRelayEvent(gender, evtHeader, entries, forceNonScoring=false, forc
       const n2 = m2 ? `${flipName(m2.name)}${m2.grade ? ' ' + m2.grade : ''}` : '';
       const label1 = String(m + 1) + ') ';
       const label2 = m2 ? String(m + 2) + ') ' : '';
-      // HyTek spec: 5-space indent, first name field = 35 chars, second name starts at col 40
-      const col1 = pad(label1 + n1, 35, 'left');
-      out += `     ${col1}  ${label2}${n2}\n`;
+      // HyTek spec: 7-space indent (aligns under school name at col 7), first name field = 33 chars, second name starts at col 42
+      const col1 = pad(label1 + n1, 33, 'left');
+      out += `       ${col1}  ${label2}${n2}\n`;
     }
   });
 
@@ -3408,12 +3414,91 @@ function handleFileDrop(e) {
   }
 }
 
+function tryExtractHeadersFromHyTekHtml(raw) {
+  // Only attempt extraction on uploaded HTML files that contain a <pre> block
+  // (i.e. our own exported format or standard HyTek flat HTML).
+  if (!raw.toLowerCase().includes('<pre>') && !raw.toLowerCase().includes('</pre>')) return;
+
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(raw, 'text/html');
+    const pre = doc.querySelector('pre');
+    if (!pre) return;
+
+    // Grab the first few non-empty lines of the <pre> text — these are
+    // the centered header lines (title, venue, date, "Results").
+    const preText = pre.textContent || '';
+    const preLines = preText.split('\n').map(l => l.trim()).filter(l => l && l !== 'Results');
+
+    // We only pull from lines that appear before any separator (===...) or event name.
+    // Take up to the first 3 content lines as title / venue / date.
+    const headerCandidates = [];
+    for (const ln of preLines) {
+      if (/^=+$/.test(ln)) break; // hit a separator — stop
+      if (/^(Girls|Boys|Women|Men)\b/.test(ln)) break; // hit an event name — stop
+      headerCandidates.push(ln);
+      if (headerCandidates.length >= 3) break;
+    }
+
+    if (headerCandidates.length === 0) return;
+
+    const titleEl  = document.getElementById('meetTitle');
+    const venueEl  = document.getElementById('meetVenue');
+    const dateEl   = document.getElementById('meetDate');
+
+    // Only fill fields that are currently empty (don't overwrite user edits).
+    const datePattern = /^(\d{1,2}\/\d{1,2}\/\d{2,4}|\w+ \d{1,2},\s*\d{4}|\d{4}-\d{2}-\d{2})$/;
+
+    let filledCount = 0;
+    for (const candidate of headerCandidates) {
+      if (!titleEl.value && !datePattern.test(candidate)) {
+        titleEl.value = candidate;
+        filledCount++;
+      } else if (!venueEl.value && !datePattern.test(candidate) && candidate !== titleEl.value) {
+        venueEl.value = candidate;
+        filledCount++;
+      } else if (!dateEl.value && datePattern.test(candidate)) {
+        dateEl.value = candidate;
+        filledCount++;
+      }
+    }
+
+    // Also check for h1/h2/h3 tags (Athletic.net style HTML uploads)
+    if (!titleEl.value) {
+      const h1 = doc.querySelector('h1');
+      if (h1?.textContent?.trim()) titleEl.value = h1.textContent.trim();
+    }
+    if (!venueEl.value || !dateEl.value) {
+      const h2 = doc.querySelector('h2');
+      if (h2) {
+        const h2text = h2.textContent.trim();
+        const dm = h2text.match(/([A-Za-z]+\.?\s+\d{1,2},\s*\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4})/);
+        if (dm && !dateEl.value) {
+          dateEl.value = dm[1];
+          if (!venueEl.value) venueEl.value = h2text.replace(dm[1], '').replace(/^[,\s-]+|[,\s-]+$/g, '').trim();
+        } else if (!venueEl.value) {
+          venueEl.value = h2text;
+        }
+      }
+    }
+
+    if (filledCount > 0) log(`Pre-populated ${filledCount} meet header field(s) from uploaded file.`);
+  } catch (err) {
+    // silently skip — not critical
+  }
+}
+
 function readFileContent(file) {
   const reader = new FileReader();
   reader.onload = function(e) {
-    document.getElementById('rawInput').value = e.target.result;
+    const content = e.target.result;
+    document.getElementById('rawInput').value = content;
     log(`Successfully uploaded file: "${file.name}" (${(file.size/1024).toFixed(1)} KB)`);
+    // Attempt to pre-populate meet headers from HTML files before processing
+    tryExtractHeadersFromHyTekHtml(content);
+    populatingHeaders = true;
     process();
+    populatingHeaders = false;
   };
   reader.readAsText(file);
 }
@@ -3502,7 +3587,11 @@ function updateUIVisuals(mode) {
   }
 }
 
-document.getElementById('processBtn').addEventListener('click', process);
+document.getElementById('processBtn').addEventListener('click', () => {
+  populatingHeaders = true;
+  process();
+  populatingHeaders = false;
+});
 document.getElementById('clearBtn').addEventListener('click', () => {
   document.getElementById('rawInput').value = '';
   document.getElementById('liveSearchInput').value = '';
@@ -3551,7 +3640,9 @@ dropZone.addEventListener('drop', handleFileDrop, false);
 document.getElementById('rawInput').addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
+    populatingHeaders = true;
     process();
+    populatingHeaders = false;
   }
 });
 
