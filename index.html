@@ -2521,7 +2521,9 @@ function buildRunningEvent(gender, evtHeader, entries, forceNonScoring=false, fo
       const ptsFWind = pad(ptsStr, 12, 'right');
       out += `${placeF}  ${nameF} ${yrF} ${schoolFWind}${timeF} ${windF}${ptsFWind}\n`;
     } else {
-      const resultF = (e.result||'').trim().substring(0, TIME_COL_W).padStart(TIME_COL_W);
+      const rStr = (e.result||'').trim();
+      const rWidth = Math.max(TIME_COL_W, rStr.length);
+      const resultF = rStr.padStart(rWidth);
       out += `${placeF}  ${nameF} ${yrF} ${schoolF}${resultF}${ptsF}\n`;
     }
   });
@@ -2555,7 +2557,8 @@ function buildXCEvent(gender, evtHeader, entries) {
     const nameF   = pad(flipName(e.name || ''), 24, 'left');
     const yrF     = pad((e.year || '').toString().substring(0, XC_YR_W), XC_YR_W, 'left');
     const schoolF = pad(cleanSchoolName(e.school || ''), XC_SCHOOL_W, 'left');
-    const resultF = (e.result || '').trim().substring(0, 7).padStart(7);
+    const rStrXC = (e.result || '').trim();
+    const resultF = rStrXC.padStart(Math.max(7, rStrXC.length));
     const ptsF    = pad(ptsStr, 12, 'right');
 
     out += `${placeF}  ${nameF} ${yrF} ${schoolF}${resultF}${ptsF}\n`;
@@ -2660,7 +2663,8 @@ function buildRelayEvent(gender, evtHeader, entries, forceNonScoring=false, forc
 
     const placeF  = e.place==='--' ? '   --' : pad(e.place||String(idx+1), 5, 'right');
     const schoolF = pad(cleanSchoolName(e.school||''), RELAY_SCHOOL_W, 'left');
-    const resultF = (e.result||'').trim().substring(0, RELAY_TIME_W).padStart(RELAY_TIME_W);
+    const rStrRelay = (e.result||'').trim();
+    const resultF = rStrRelay.padStart(Math.max(RELAY_TIME_W, rStrRelay.length));
     const ptsF    = pad(ptsStr, RELAY_PTS_W, 'right');
 
     out += `${placeF}  ${schoolF}${resultF}${ptsF}\n`;
