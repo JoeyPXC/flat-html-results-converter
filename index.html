@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50 dark:bg-slate-900">
 <head>
@@ -806,7 +807,7 @@ function cleanHtmlToText(text) {
 function estimateColumns(headerLine) {
   const keywords = [
     { key: 'place', regex: /\b(place|plc|rank|pl)\b/i, defaultIdx: 0 },
-    { key: 'name', regex: /\bname\b/i },
+    { key: 'name', regex: /\b(name|athlete)\b/i },
     { key: 'year', regex: /\b(yr|year|grade|class|gr)\b/i },
     { key: 'school', regex: /\b(school|team|team\s+name)\b/i },
     { key: 'time', regex: /\b(actual|time|finals|mark|perf)\b/i }
@@ -911,15 +912,15 @@ function parseAthMeet(raw) {
         }
 
         if (currentSchool && !line.includes("Total Time") && !line.includes("Total Places")) {
+          // Handle grade*time fused (no space) — Gopher girls: "Anne-Catherine Brown, 12*19:14.0"
+          const fusedMatch = line.match(/^\s*(\d+)\s+(.+?),\s*(\d{1,2})\*\s*(\d{1,2}:\d{2}(?:\.\d+)?h?)/);
+          if (fusedMatch) {
+            entries.push({ place: fusedMatch[1], year: fusedMatch[3], name: fusedMatch[2].trim(), school: cleanSchoolName(currentSchool), result: fusedMatch[4] });
+            continue;
+          }
           const nestedMatch = line.match(/^\s*(\d+)\s+([^,]+?)(?:,\s*([A-Za-z0-9]+))?\s+(\d{1,2}:\d{2}(?:\.\d+)?h?)\s+(\d{1,2}:\d{2})(?:\s+(\d+))?\s*$/);
           if (nestedMatch) {
-            entries.push({
-              place: nestedMatch[1],
-              year: nestedMatch[3] || '',
-              name: nestedMatch[2].trim(),
-              school: cleanSchoolName(currentSchool),
-              result: nestedMatch[4]
-            });
+            entries.push({ place: nestedMatch[1], year: nestedMatch[3] || '', name: nestedMatch[2].trim().replace(/\*+$/, ''), school: cleanSchoolName(currentSchool), result: nestedMatch[4] });
             continue;
           }
         }
@@ -981,13 +982,14 @@ function parseAthMeet(raw) {
 
               if (nameGradeParts.length > 1) {
                 const lastToken = nameGradeParts[nameGradeParts.length - 1];
-                if (/^\d{1,2}$/.test(lastToken) && parseInt(lastToken) <= 12) {
-                  grade = lastToken;
+                const gradeVal = lastToken.replace(/\*+$/, ''); // strip trailing asterisk
+                if (/^\d{1,2}$/.test(gradeVal) && parseInt(gradeVal) <= 12) {
+                  grade = gradeVal;
                   nameGradeParts.pop();
                 }
               }
 
-              let fullName = nameGradeParts.join(' ').replace(/,$/, '').trim();
+              let fullName = nameGradeParts.join(' ').replace(/,$/, '').replace(/\*+$/, '').trim();
 
               entries.push({
                 place: place,
@@ -1431,6 +1433,124 @@ function parseAthMeet(raw) {
     }
   }
 
+
+  // ── ATHLETIC.NET TAB-DELIMITED XC PARSER ─────────────────────────────────────
+  // Detects the copy-paste format from Athletic.net meet result pages:
+  //   "1.\t12\tConnor Reed\t\t16:22.00\t\tMass. Perry"
+  // Handles Mens/Womens sections, multiple race blocks (Varsity, JV, etc.)
+  const isAnetTab = /^\d+\.\t\d{1,2}\t/.test(cleanRaw) ||
+                    cleanRaw.split('\n').some(l => /^\d+\.\t\d{1,2}\t.+\t[\d]+:[\d]{2}/.test(l.trim()));
+
+  if (isAnetTab) {
+    log('Athletic.net tab-delimited XC format detected!');
+    setSourceBadge('Athletic.net');
+
+    const anetLines = cleanRaw.split('\n');
+    let anetGender = 'boys';
+    let anetEventHeader = document.getElementById('xcRaceHeader').value.trim() || 'Cross Country Run Finals';
+    let inTeamScores = false;
+    const anetEvents = []; // { header, gender, entries[] }
+    let currentAnetEvent = null;
+
+    function flushAnetEvent() {
+      if (currentAnetEvent && currentAnetEvent.entries.length > 0) {
+        anetEvents.push(currentAnetEvent);
+      }
+      currentAnetEvent = null;
+    }
+
+    for (let i = 0; i < anetLines.length; i++) {
+      const raw = anetLines[i];
+      const line = raw.trim();
+      if (!line) continue;
+
+      // Stop at footer junk
+      if (/^RUNNERSPACE|^Athletic\.net Home|^Thanks for supporting|^Features & Pricing/i.test(line)) break;
+
+      // Gender section headers
+      if (/^Mens Results$/i.test(line) || /^Boys Results$/i.test(line)) {
+        flushAnetEvent(); anetGender = 'boys'; continue;
+      }
+      if (/^Womens Results$/i.test(line) || /^Girls Results$/i.test(line)) {
+        flushAnetEvent(); anetGender = 'girls'; continue;
+      }
+
+      // Race/event headers like "5,000 Meters Varsity" or "5,000 Meters Junior Varsity"
+      if (/^\d[\d,]*\s+Meters?\s+/i.test(line) || /^\d+(?:\.\d+)?\s*[Kk]\s+/i.test(line)) {
+        flushAnetEvent();
+        // Build a clean header: "Boys 5000 Meter Varsity Run" style
+        const distMatch = line.match(/^(\d[\d,]*)\s+Meters?\s+(.*)/i);
+        let dist = distMatch ? distMatch[1].replace(/,/g, '') : '';
+        let suffix = distMatch ? distMatch[2].trim() : line;
+        // Suffix cleanup: "Junior Varsity" -> "JV", keep "Varsity" etc.
+        suffix = suffix.replace(/Junior Varsity/i, 'JV').trim();
+        anetEventHeader = dist ? `${dist} Meter Run${suffix ? ' ' + suffix : ''}` : line;
+        inTeamScores = false;
+        continue;
+      }
+
+      // Skip "Official Team Scores" block and score lines like "1.\tChardon\t58"
+      if (/Official Team Scores/i.test(line)) { inTeamScores = true; continue; }
+      if (inTeamScores) {
+        // Team score rows look like "1.\tChardon\t58" — tab-sep with integer score
+        if (/^\d+\.\t.+\t\d+$/.test(line)) continue;
+        // Once we hit a result row (has a time), end team scores mode
+        if (/\d+:\d{2}/.test(line)) inTeamScores = false;
+        else continue;
+      }
+
+      // Skip section/label lines
+      if (/^Official/i.test(line) || /^View Athletic/i.test(line) || /^\d+\s+Followers/i.test(line)) continue;
+
+      // Individual result rows: "1.\t12\tConnor Reed\t\t16:22.00\t\tMass. Perry\t\t"
+      const tabs = raw.split('\t').map(t => t.trim()).filter((t, idx) => t !== '' || idx === 0);
+      const nonEmpty = tabs.filter(t => t !== '');
+      // Need at least: place, grade, name, time, school
+      if (nonEmpty.length < 4) continue;
+
+      const placeMatch = nonEmpty[0].match(/^(\d+)\.?$/);
+      if (!placeMatch) continue;
+
+      const place = placeMatch[1];
+      const grade = /^\d{1,2}$/.test(nonEmpty[1]) ? nonEmpty[1] : '';
+      const gradeOffset = grade ? 1 : 0;
+
+      // Find the time token (MM:SS.dd)
+      let timeIdx = -1;
+      for (let t = gradeOffset + 1; t < nonEmpty.length; t++) {
+        if (/^\d{1,2}:\d{2}(\.\d+)?$/.test(nonEmpty[t])) { timeIdx = t; break; }
+      }
+      if (timeIdx < 0) continue;
+
+      const name = nonEmpty.slice(1 + gradeOffset, timeIdx).join(' ').trim();
+      const school = nonEmpty.slice(timeIdx + 1).join(' ').trim();
+      const result = nonEmpty[timeIdx];
+
+      if (!name || !school) continue;
+
+      if (!currentAnetEvent) {
+        currentAnetEvent = { header: anetEventHeader, gender: anetGender, entries: [] };
+      }
+      // If gender or event header changed mid-block, flush and start fresh
+      if (currentAnetEvent.gender !== anetGender || currentAnetEvent.header !== anetEventHeader) {
+        flushAnetEvent();
+        currentAnetEvent = { header: anetEventHeader, gender: anetGender, entries: [] };
+      }
+
+      currentAnetEvent.entries.push({ place, year: grade, name: name.replace(/\.+$/, '').trim(), school: cleanSchoolName(school), result });
+    }
+    flushAnetEvent();
+
+    if (anetEvents.length > 0) {
+      log(`Athletic.net tab: parsed ${anetEvents.length} race block(s).`);
+      anetEvents.forEach(evt => {
+        sections[evt.gender].push({ header: evt.header, kind: 'running', entries: evt.entries, gender: evt.gender });
+      });
+      return sections;
+    }
+  }
+  // ── END ATHLETIC.NET TAB PARSER ───────────────────────────────────────────────
+
   // Multi-line Athletic.net structured parser
   const rawLinesForAnet = cleanRaw.split('\n').map(l => l.trim()).filter(l => l !== '');
   let isMultiLineAnet = false;
@@ -1577,11 +1697,20 @@ function parseAthMeet(raw) {
 
         const rawPlace = sliceCol(line, ranges.place);
         const place = rawPlace.split(/\s+/)[0];
-        const name = sliceCol(line, ranges.name);
+        let name = sliceCol(line, ranges.name);
         const school = sliceCol(line, ranges.school);
         const rawTime = sliceCol(line, ranges.time);
         const result = rawTime.split(/\s+/)[0];
-        const year = ranges.year ? sliceCol(line, ranges.year) : '';
+        let year = ranges.year ? sliceCol(line, ranges.year) : '';
+
+        // HyTek XC puts "Name, Grade" in the name column — extract grade if present.
+        // Run even when ranges.year exists, because the Yr column header may not align
+        // with actual grade data (e.g. Gopher "Athlete  Yr School" layout).
+        const nameGradeMatch = name.match(/^(.+?),\s*(\d{1,2})\s*$/);
+        if (nameGradeMatch) {
+          name = nameGradeMatch[1].trim();
+          if (!year || !/^\d+$/.test(year.trim())) year = nameGradeMatch[2];
+        }
 
         if (place && name && result && isTrackTime(result)) {
           entries.push({
@@ -1705,10 +1834,8 @@ function parseAthMeet(raw) {
   // The individual results header is "Place Name Grade Team Time Points" and each row looks like:
   //   1 Sam Hopp 12 Twinsburg 15:44.6 1
   // Sometimes a runner's name wraps to a second line in the PDF copy, so we merge continuation lines.
-  const isFinishTiming = cleanRaw.includes("Place Name Grade Team Time Points") ||
-                         cleanRaw.includes("I n d i v i d u a l R e s u l t s") ||
-                         // Also detect by the characteristic column header pattern even with extra whitespace
-                         /place\s+name\s+grade\s+team\s+time\s+points/i.test(cleanRaw);
+  const isFinishTiming = /place\s*name\s+grade\s+team\s+time\s+points/i.test(cleanRaw) ||
+                         cleanRaw.includes("I n d i v i d u a l R e s u l t s");
   if (isFinishTiming) {
     log("FinishTiming PDF Cross Country format detected!");
     setSourceBadge("FinishTiming PDF");
@@ -1718,44 +1845,58 @@ function parseAthMeet(raw) {
     let acc = "";
     let detectedRaceHeader = "Cross Country Run Finals";
 
-    // Lines to skip — but be careful NOT to skip lines just because a school/team
-    // name contains "boys" or "girls". Only skip header/metadata lines.
+    // Lines to skip
+    let inTeamResultsBlock = false;
     function isNoiseLine(line) {
       const l = line.toLowerCase();
       if (!l) return true;
       // Race header lines like "Race 2 - Boys HS Div 1/2 - 5K"
       if (/^race\s+\d+/i.test(line)) {
-        // Extract race header for gender detection
+        inTeamResultsBlock = false;
         const raceLabel = line.replace(/^\s*Race\s+\d+\s*[-–]\s*/i, '').trim();
         if (raceLabel) detectedRaceHeader = raceLabel;
         return true;
       }
+      // "Place Team Score" = start of team results block
+      if (/^place\s+team\s+score/i.test(line)) { inTeamResultsBlock = true; return true; }
+      // "Team Results" header
+      if (/^team\s+results/i.test(line)) { inTeamResultsBlock = true; return true; }
+      // "Individual Results" = end of team block, start of individual results
+      if (/individual\s+results/i.test(line) || l.includes("i n d i v i d u a l")) {
+        inTeamResultsBlock = false; return true;
+      }
+      // Skip everything inside the team results block
+      if (inTeamResultsBlock) return true;
       // "08/30/25 - 9:30 am" style date/time line
       if (/^\d{2}\/\d{2}\/\d{2,4}/.test(line)) return true;
-      // Column header row
-      if (/^place\s+name\s+grade\s+team\s+time\s+points/i.test(line)) return true;
-      // Spaced-out header: "I n d i v i d u a l  R e s u l t s"
-      if (l.includes("i n d i v i d u a l") || l.includes("individual results")) return true;
-      // Team results section header — stop parsing individual results
-      if (/^team\s+results/i.test(line)) return true;
+      // Column header row (PlaceName or Place Name) — also ends team results block
+      if (/^place\s*name\s+grade\s+team\s+time\s+points/i.test(line)) { inTeamResultsBlock = false; return true; }
       // Page footer: "Page 1/5  8/30/2025 10:01am"
       if (/^page\s+\d+/i.test(line) && (l.includes("am") || l.includes("pm") || /\d{4}/.test(line))) return true;
-      // Meet title / venue lines that appear before results (no time, no leading number)
-      // We'll let the merger handle these; don't suppress them here so names don't get eaten
+      // DNP team lines
+      if (/^dnp\s/i.test(line)) return true;
       return false;
     }
 
     rawLines.forEach(line => {
       if (isNoiseLine(line)) return;
-      // A row starts with a place number followed by a space
-      const startsWithRank = /^\d+\s/.test(line);
+      // A new entry starts with a place number > 12 (can't be a grade),
+      // OR starts with a number followed by a name-like token (capital letter word).
+      // This prevents "9 Twinsburg 21:02.5" (a grade+school+time fragment from a
+      // wrapped name) from being mistaken for a new place-9 entry.
+      const leadNumMatch = line.match(/^(\d+)\s+(\S)/);
+      const isNewEntry = leadNumMatch && (
+        parseInt(leadNumMatch[1]) > 12 ||           // place numbers above 12 are unambiguous
+        /^[A-Z]/.test(leadNumMatch[2]) && acc === '' // first entry, no acc yet
+      );
+      // Also treat as new entry if acc is empty (first result row)
+      const startsWithRank = leadNumMatch && (parseInt(leadNumMatch[1]) > 12 || !acc);
       if (startsWithRank) {
         if (acc) mergedRows.push(acc.trim());
         acc = line;
       } else {
-        // Continuation of a wrapped name line
+        // Continuation: either a name fragment or a grade+school+time fragment
         if (acc) acc += " " + line;
-        // else: pre-results metadata line, skip
       }
     });
     if (acc) mergedRows.push(acc.trim());
@@ -1837,7 +1978,7 @@ function parseAthMeet(raw) {
   const isXcType = document.getElementById('meetType').value === 'cross_country';
   const isSingleLineXC = lines.some(line => /^\s*\d+\.?\s+(\d{1,2})?\s+.+?\s+\d{1,2}:\d{2}/.test(line));
 
-  if ((isSingleLineXC || isXcType) && !cleanRaw.includes('Yr:') && !cleanRaw.includes('•') && !cleanRaw.includes('PLACE VIDEO')) {
+  if ((isSingleLineXC || isXcType) && !cleanRaw.includes('Yr:') && !cleanRaw.includes('•') && !cleanRaw.includes('PLACE VIDEO') && !isFinishTiming) {
     log("Standard Cross Country parser activated!");
     
     let currentGender = 'boys';
@@ -1870,8 +2011,29 @@ function parseAthMeet(raw) {
         return;
       }
 
-      const match = line.match(/^\s*(\d+)\s+(\d{1,2})?\s+(.+?)\s+(\d{1,2}:\d{2}(?:\.\d{1,2})?)\s+(.+)$/);
-      if (match) {
+      // Parse by anchoring on the time field, then splitting what comes before it by 2+ spaces.
+      // Handles: "    1  Angela Zeng, 10             South Fayette                    18:02.3   1"
+      const timeM = line.match(/(\d{1,2}:\d{2}\.\d+)/);
+      let entryPlace, entryYear='', entryName, entrySchool, entryResult;
+
+      if (timeM) {
+        entryResult = timeM[1];
+        const timeIdx = line.indexOf(entryResult);
+        const before = line.substring(0, timeIdx).trimEnd();
+        const parts = before.split(/\s{2,}/).map(p => p.trim()).filter(Boolean);
+        // parts: ['1', 'Angela Zeng, 10', 'South Fayette']  (or similar)
+        if (parts.length >= 2) {
+          entryPlace  = parts[0].replace(/\.$/,'');
+          entrySchool = parts[parts.length - 1];
+          entryName   = parts.slice(1, -1).join(' ').trim() || parts[1]; // fallback if only 2 parts
+          if (parts.length === 2) { entryName = parts[1]; entrySchool = ''; }
+          // Extract grade from name if it ends with ", ##"
+          const ngm = entryName.match(/^(.+?),\s*(\d{1,2})\s*$/);
+          if (ngm) { entryName = ngm[1].trim(); entryYear = ngm[2]; }
+        }
+      }
+
+      if (entryPlace && entryName && entryResult) {
         if (!currentEvent) {
           currentEvent = {
             header: "Cross Country Run Finals",
@@ -1881,11 +2043,11 @@ function parseAthMeet(raw) {
           };
         }
         currentEvent.entries.push({
-          place: match[1],
-          year: match[2] || '',
-          name: match[3].trim(),
-          school: cleanSchoolName(match[5].trim()),
-          result: match[4]
+          place: entryPlace,
+          year: entryYear,
+          name: entryName,
+          school: cleanSchoolName(entrySchool || ''),
+          result: entryResult
         });
       }
     });
