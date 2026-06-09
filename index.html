@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50 dark:bg-slate-900">
 <head>
@@ -2130,11 +2131,15 @@ function parseAthMeet(raw) {
               const markLine = lines[i];
               const parts = markLine.split(/\s+/);
               let result = markLine;
+              let relayHeat = null;
               if (parts.length >= 2) {
-                if (/^\d+$/.test(parts[parts.length - 1])) parts.pop();
+                // Last token: if it's a small integer it's the heat number (not a time or score)
+                if (/^\d{1,2}$/.test(parts[parts.length - 1]) && !isTrackTime(parts[parts.length - 1])) {
+                  relayHeat = parseInt(parts.pop());
+                }
                 result = parts.join(' ');
               }
-              currentEvent.entries.push({ place, school, result: cleanResult(result, currentEvent.header), members: [] });
+              currentEvent.entries.push({ place, school, result: cleanResult(result, currentEvent.header), members: [], heat: relayHeat || currentEvent._currentHeat || null });
               i++;
             }
           } else {
@@ -2142,7 +2147,22 @@ function parseAthMeet(raw) {
             i++;
             while (i < lines.length && lines[i] === '') i++;
             if (i < lines.length) {
-              const statsLine = lines[i];
+              let statsLine = lines[i];
+
+              // Strip trailing heat number: a lone small integer at the end that
+              // follows a time/mark (not itself a time). e.g. "9 Walsh Jesuit 11.47 2.0 4"
+              let inlineHeat = null;
+              const trailingHeatMatch = statsLine.match(/^(.+?)\s+(\d{1,2})$/);
+              if (trailingHeatMatch) {
+                const candidate = trailingHeatMatch[2];
+                const rest      = trailingHeatMatch[1];
+                // Only treat as heat if rest contains a valid time/mark and candidate is not itself a time
+                if (!isTrackTime(candidate) && /[:\d]/.test(rest) && (isTrackTime(rest.split(/\s+/).slice(-1)[0]) || /[\d]-[\d]/.test(rest) || /^[-+]?\d+\.\d+$/.test(rest.split(/\s+/).slice(-1)[0]))) {
+                  inlineHeat = parseInt(candidate);
+                  statsLine  = rest;
+                }
+              }
+
               let grade = '';
               let remaining = statsLine;
               
@@ -2183,7 +2203,8 @@ function parseAthMeet(raw) {
                 year: grade,
                 name: athleteName,
                 school: cleanSchoolName(school),
-                result: cleanResult(result, currentEvent.header)
+                result: cleanResult(result, currentEvent.header),
+                heat: inlineHeat || currentEvent._currentHeat || null
               });
               i++;
             }
@@ -2473,7 +2494,31 @@ function buildRunningEvent(gender, evtHeader, entries, forceNonScoring=false, fo
   const fullEvtName = cleanEventTitle(gender, evtHeader, forceCollegiate);
   const scoreable = isScoreable(evtHeader, forceNonScoring);
 
-  if (!scoreable) {
+  // ── Heat handling ──────────────────────────────────────────────────────────
+  // Determine if any entries carry a heat tag
+  const hasHeats = entries.some(e => e.heat != null);
+
+  // "Prelims" / "Heats" round: show entries grouped by heat with sub-headers,
+  //   places are within-heat (as parsed), no overall re-rank.
+  // "Finals" or no round suffix: if heats were present (e.g. one big invite section
+  //   without a separate finals), merge + re-rank by time into one clean list.
+  const isPrelimRound = /prelim|heat/i.test(evtHeader);
+  const showHeatGroups = hasHeats && isPrelimRound;
+  const mergeAndRerank  = hasHeats && !isPrelimRound;
+
+  if (mergeAndRerank) {
+    // Re-rank merged list by time
+    entries = sortEntries(entries);
+    let currentPlace = 1;
+    entries.forEach(e => {
+      const resUpper = (e.result || '').trim().toUpperCase();
+      if (/^(DQ|DNS|DNF|FS|SCR|NT)$/.test(resUpper) || parseTimeToSeconds(e.result) === Infinity) {
+        e.place = '--';
+      } else {
+        e.place = String(currentPlace++);
+      }
+    });
+  } else if (!scoreable) {
     entries = sortEntries(entries);
     let currentPlace = 1;
     entries.forEach(e => {
@@ -2509,7 +2554,23 @@ function buildRunningEvent(gender, evtHeader, entries, forceNonScoring=false, fo
 
   const pointsMap = calculateTiedPoints(entries, false, isWheelchairEvent(evtHeader), scoreable);
 
-  entries.forEach(e => {
+  // Group entries by heat when showing heat groups; otherwise flat array
+  const heatGroups = showHeatGroups
+    ? (() => {
+        const map = new Map();
+        entries.forEach(e => {
+          const k = e.heat != null ? e.heat : 0;
+          if (!map.has(k)) map.set(k, []);
+          map.get(k).push(e);
+        });
+        // Sort heat groups by heat number
+        return [...map.entries()].sort((a,b) => a[0] - b[0]);
+      })()
+    : null;
+
+  const totalHeats = heatGroups ? heatGroups.length : 0;
+
+  function emitEntry(e) {
     const pts = pointsMap.get(e);
     const ptsStr = (pts !== undefined && pts > 0) ? Number(pts.toFixed(2)).toString().replace(/\.00$/, '') : '';
 
@@ -2532,7 +2593,19 @@ function buildRunningEvent(gender, evtHeader, entries, forceNonScoring=false, fo
       const resultF = rStr.padStart(rWidth);
       out += `${placeF}  ${nameF} ${yrF} ${schoolF}${resultF}${ptsF}\n`;
     }
-  });
+  }
+
+  if (showHeatGroups) {
+    heatGroups.forEach(([heatNum, heatEntries]) => {
+      const heatLabel = heatNum > 0
+        ? `  -- Heat ${heatNum} of ${totalHeats} --`
+        : `  -- Heat --`;
+      out += `${heatLabel}\n`;
+      heatEntries.forEach(emitEntry);
+    });
+  } else {
+    entries.forEach(emitEntry);
+  }
 
   return out;
 }
