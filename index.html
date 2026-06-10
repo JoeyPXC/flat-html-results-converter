@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50 dark:bg-slate-900">
 <head>
@@ -79,13 +78,9 @@ body { font-family: 'Inter', sans-serif; }
 
   /* Output action buttons scroll horizontally instead of wrapping */
   .output-btn-row {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    flex-wrap: nowrap !important;
-    padding-bottom: 2px;
+    flex-wrap: wrap !important;
+    gap: 6px;
   }
-  .output-btn-row::-webkit-scrollbar { display: none; }
 }
 
 /* Jump-to-output floating button (mobile only) */
@@ -373,12 +368,18 @@ body { font-family: 'Inter', sans-serif; }
           <button id="tabText" class="px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
             <i class="fa-solid fa-file-lines"></i> Raw Text
           </button>
+          <button id="tabAp" class="px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-newspaper"></i> AP Style
+          </button>
         </div>
         <span id="sourceBadge" class="hidden text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 flex items-center gap-1">
           <i class="fa-solid fa-circle-check text-[8px]"></i> <span id="sourceBadgeText"></span>
         </span>
       </div>
-      <div class="flex items-center gap-2 output-btn-row">
+      <div class="flex flex-wrap items-center gap-1.5 output-btn-row">
+        <button id="exportApBtn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+          <i class="fa-solid fa-newspaper mr-1"></i>AP Style
+        </button>
         <button id="exportCsvBtn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
           <i class="fa-solid fa-file-csv mr-1"></i>Export CSV
         </button>
@@ -412,6 +413,30 @@ body { font-family: 'Inter', sans-serif; }
       </div>
       <div id="paneText" class="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 p-4 cs hidden">
         <pre id="outText" class="whitespace-pre font-mono text-xs text-amber-600 dark:text-yellow-400"></pre>
+      </div>
+      <div id="paneAp" class="flex-1 overflow-auto bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 p-5 cs hidden">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100 dark:border-slate-800 flex-wrap gap-2">
+          <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-newspaper"></i> AP Newspaper Style</span>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Show:</span>
+            <div class="flex rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 text-[11px] font-semibold">
+              <button data-apdepth="1"   class="ap-depth-btn px-2 py-1 bg-rose-600 text-white">1st</button>
+              <button data-apdepth="3"   class="ap-depth-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">1-3</button>
+              <button data-apdepth="8"   class="ap-depth-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">1-8</button>
+              <button data-apdepth="all" class="ap-depth-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">All</button>
+            </div>
+            <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Name:</span>
+            <div class="flex rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 text-[11px] font-semibold">
+              <button data-apname="last"  class="ap-name-btn px-2 py-1 bg-rose-600 text-white">Last</button>
+              <button data-apname="first_initial" class="ap-name-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">F. Last</button>
+              <button data-apname="full"  class="ap-name-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">Full</button>
+            </div>
+            <button id="copyApBtn" class="text-xs font-semibold px-3 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 dark:bg-rose-900/30 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 transition flex items-center gap-1.5">
+              <i class="fa-regular fa-copy"></i> Copy
+            </button>
+          </div>
+        </div>
+        <div id="outAp" class="text-sm text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-wrap font-sans"></div>
       </div>
     </div>
     <div id="toast" class="absolute bottom-6 right-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs px-4 py-3 rounded-lg flex items-center gap-2 shadow-2xl opacity-0 transition-all duration-300 pointer-events-none z-50">
@@ -506,6 +531,7 @@ function center(s, w=87) {
 
 function flipName(first) {
   first = first.trim().replace(/\.\.\.$/, '').trim();
+  first = first.replace(/`/g, '').replace(/,\s*$/, '').trim();
   if (!document.getElementById('flipNamesCheck').checked) return first;
   if (first.includes(',')) return first;
   const parts = first.split(/\s+/);
@@ -2069,9 +2095,10 @@ function parseAthMeet(raw) {
         const gLabel = currentGender === 'girls' ? 'Girls' : 'Boys';
         const evtBody = adaptiveMatch[2].trim(); 
         const roundLabel = adaptiveMatch[3];
+        // If evtBody already contains "wheelchair", don't add it again
         const wcHeader = /wheelchair/i.test(evtBody)
-          ? `${gLabel} ${evtBody} Wheelchair ${roundLabel}`
-          : `${gLabel} Wheelchair ${evtBody} ${roundLabel}`;
+          ? `${gLabel} ${evtBody} ${roundLabel}`.replace(/\s+/g,' ').trim()
+          : `${gLabel} Wheelchair ${evtBody} ${roundLabel}`.replace(/\s+/g,' ').trim();
         currentEvent = { header: wcHeader, kind, entries: [], gender: currentGender };
         log(`Parsed Adaptive/Wheelchair Event: [${currentGender.toUpperCase()}] ${wcHeader}`);
         i++;
@@ -2447,6 +2474,11 @@ function cleanEventTitle(gender, evtHeader, forceCollegiate=false) {
 
   title = title.replace(/^(?:Varsity\s+)?(Boys|Girls|Mens|Womens|Men's|Women's)\s+/i, '');
 
+  // Strip hurdle height annotations: " - 33\" / 0.838 Meter", " - 39\" / 0.991 Meter"
+  title = title.replace(/\s*-\s*\d+["\'\u201c\u201d][^\n]*$/i, '').trim();
+  // Strip shot/discus weight annotations: " - 4kg", " - 12lb", " - 1.6kg"
+  title = title.replace(/\s*-\s*[\d.]+\s*(?:kg|lb\.?)\s*$/i, '').trim();
+
   title = title
     .replace(/(\d+)m\s+/ig, '$1 Meter ')
     .replace(/(\d+)\s+meters?/ig, '$1 Meter')
@@ -2459,6 +2491,10 @@ function cleanEventTitle(gender, evtHeader, forceCollegiate=false) {
     else title += ' Run';
   }
 
+  // Remove duplicate consecutive words e.g. "Wheelchair Wheelchair" → "Wheelchair"
+  title = title.replace(/\b(\w+)\s+\1\b/gi, '$1');
+  // Normalize "800 - Wheelchair" → "800 Wheelchair"
+  title = title.replace(/(\d+)\s*-\s*(Wheelchair)/i, '$1 $2');
   title = title.replace(/\s+/g, ' ').trim();
   return `${genLabel} ${title}${roundSuffix}`;
 }
@@ -3255,14 +3291,22 @@ function rebuildOutput() {
   document.getElementById('outPreview').textContent = fileText;
   document.getElementById('outText').textContent    = fileText;
   document.getElementById('outHtml').textContent    = htmlOut;
+
+  // If the AP tab is currently visible, refresh it too
+  if (activeTab === 'ap') {
+    document.getElementById('outAp').textContent = buildAPText();
+  }
 }
 
 let activeTab = 'preview';
 function setTab(t) {
   activeTab = t;
-  ['preview','html','text'].forEach(id => {
-    const btn  = document.getElementById('tab'+id.charAt(0).toUpperCase()+id.slice(1));
-    const pane = document.getElementById('pane'+id.charAt(0).toUpperCase()+id.slice(1));
+  ['preview','html','text','ap'].forEach(id => {
+    const btnId  = 'tab' + id.charAt(0).toUpperCase() + id.slice(1);
+    const paneId = 'pane' + id.charAt(0).toUpperCase() + id.slice(1);
+    const btn  = document.getElementById(btnId);
+    const pane = document.getElementById(paneId);
+    if (!btn || !pane) return;
     if (id === t) {
       btn.className = "px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-600 text-white flex items-center gap-1.5";
       pane.classList.remove('hidden');
@@ -3271,10 +3315,17 @@ function setTab(t) {
       pane.classList.add('hidden');
     }
   });
+  // When switching to AP tab, refresh the AP pane content
+  if (t === 'ap' && currentParsedSections) {
+    document.getElementById('outAp').textContent = buildAPText();
+  }
 }
 
 function copyContent() {
-  const src = activeTab === 'html' ? document.getElementById('outHtml').textContent : document.getElementById('outPreview').textContent;
+  let src;
+  if (activeTab === 'html') src = document.getElementById('outHtml').textContent;
+  else if (activeTab === 'ap') src = document.getElementById('outAp').textContent;
+  else src = document.getElementById('outPreview').textContent;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(src).then(() => {
       toast('Copied to clipboard!');
@@ -3299,6 +3350,286 @@ function _legacyCopy(src) {
     toast('Copy failed — try Ctrl+A, Ctrl+C.');
   }
   document.body.removeChild(tempEl);
+}
+
+function buildAPText() {
+  if (!currentParsedSections) return '';
+
+  const mt = document.getElementById('meetType').value;
+  const incGirls = document.getElementById('includeGirlsCheck').checked;
+  const incBoys  = document.getElementById('includeBoysCheck').checked;
+  const girlsFirst = document.getElementById('girlsFirstCheck').checked;
+  const isCollege = (mt === 'college_xc');
+
+  function apSchoolAbbr(school) {
+    const s = cleanSchoolName(school || '').trim();
+    if (!s) return '';
+    const words = s.split(/\s+/).filter(Boolean);
+    if (words.length === 1) return words[0][0].toUpperCase();
+    return words.slice(0, 3).map(w => w[0].toUpperCase()).join('');
+  }
+
+  function buildSchoolAbbrMap(sections) {
+    const abbrToSchools = {};
+    const allSchools = new Set();
+    ['girls','boys'].forEach(g => {
+      (sections[g] || []).forEach(evt => {
+        evt.entries.forEach(e => {
+          const s = cleanSchoolName(e.school || '').trim();
+          if (s) allSchools.add(s);
+        });
+      });
+    });
+    allSchools.forEach(school => {
+      const ab = apSchoolAbbr(school);
+      if (!abbrToSchools[ab]) abbrToSchools[ab] = [];
+      abbrToSchools[ab].push(school);
+    });
+    const schoolToAbbr = {};
+    allSchools.forEach(school => {
+      const ab = apSchoolAbbr(school);
+      schoolToAbbr[school] = abbrToSchools[ab].length === 1 ? ab : school.substring(0, 2).toUpperCase();
+    });
+    return schoolToAbbr;
+  }
+
+  // Short AP event names — no weights, no hurdle heights, no "Varsity"
+  function apEventName(evtHeader) {
+    let h = evtHeader
+      .replace(/^(Girls?|Boys?|Women'?s?|Men'?s?)\s+/i, '')
+      .replace(/\s*(Finals?|Prelims?|Semis?|Heats?)$/i, '')
+      .replace(/\bVarsity\b/gi, '')
+      // Strip dash-wrapped qualifier blocks: " - 4kg -", " - 39" / 0.991 -", " - 33" / 0.838 -", " - 1.6kg -", " - -"
+      .replace(/\s*-\s*[^-]*(?:kg|lb\.?|"\s*\/[^-]*|in\.?)[^-]*-/gi, '')
+      // Strip any remaining bare " - -" or " -:" leftover
+      .replace(/\s*-\s*-/g, '')
+      // Strip trailing " -" or "- " at end
+      .replace(/\s*-\s*$/g, '')
+      // Strip parenthesised specs: "(12 lb.)", "(33 in.)", "(0.991)"
+      .replace(/\s*\([^)]*(?:lb|kg|in|"|\/)[^)]*\)/gi, '')
+      // Strip bare weight/height units that survive
+      .replace(/\s+[\d.]+\s*kg\b/gi, '')
+      .replace(/\s+[\d.]+\s*lb\.?\b/gi, '')
+      .replace(/\s+[\d.]+-pound\b/gi, '')
+      .replace(/\s+[\d.]+"\s*\/\s*[\d.]+/g, '')  // e.g. 39" / 0.991
+      .replace(/\s+/g, ' ')
+      // Remove duplicate consecutive words e.g. "Wheelchair Wheelchair" → "Wheelchair"
+      .replace(/\b(\w+)\s+\1\b/gi, '$1')
+      // Normalize "800 - Wheelchair" → "800 Wheelchair" for cleaner AP names
+      .replace(/(\d+)\s*-\s*(Wheelchair)/i, '$1 $2')
+      .trim();
+
+    const maps = [
+      // 4xN relay formats: "4x100 Relay", "4x400 Relay" → keep as "4x100" etc
+      [/^4\s*[xX×]\s*(\d+)\s*(?:relay|rel)?$/i,  (m) => `4x${parseInt(m[1])}`],
+      // Spelled-out meter relays: "1,600-meter relay", "3200 meter relay"
+      [/^(\d{1,3}(?:[,\s]\d{3})?)[- ]?meter[- ]relay$/i, (m) => {
+        const n = parseInt(m[1].replace(/[,\s]/g,''));
+        return n >= 1000 ? `${n.toLocaleString()}-meter relay` : `${n}-meter relay`;
+      }],
+      [/^(\d+)[- ]?m[- ]relay$/i, (m) => { const n=parseInt(m[1]); return n>=1000?`${n.toLocaleString()}-meter relay`:`${n}-meter relay`; }],
+      [/^(\d+)[- ]?yard[- ]relay$/i,           (m) => `${m[1]}-yard relay`],
+      [/^(\d+)[- ]?meter[- ]?(dash|run)$/i,    (m) => m[1]],
+      [/^(\d+)[- ]?meter$/i,                   (m) => m[1]],
+      [/^(\d+)[- ]?m$/i,                       (m) => m[1]],
+      [/^(\d+)[- ]?yard[- ]?(dash|run)?$/i,    (m) => m[1]],
+      [/^(\d+)[- ]?(?:meter[- ]?)?hurdles?/i,  (m) => `${m[1]} hurdles`],
+      [/^shot[- ]?put$/i,                      () => 'Shot put'],
+      [/^discus[- ]?throw$/i,                  () => 'Discus'],
+      [/^discus$/i,                            () => 'Discus'],
+      [/^high[- ]?jump$/i,                     () => 'High jump'],
+      [/^long[- ]?jump$/i,                     () => 'Long jump'],
+      [/^triple[- ]?jump$/i,                   () => 'Triple jump'],
+      [/^pole[- ]?vault$/i,                    () => 'Pole vault'],
+      [/^hammer[- ]?throw$/i,                  () => 'Hammer'],
+      [/^hammer$/i,                            () => 'Hammer'],
+      [/^javelin[- ]?throw$/i,                 () => 'Javelin'],
+      [/^javelin$/i,                           () => 'Javelin'],
+      [/^(cross[- ]?country|xc)[- ]?run/i,    () => 'Cross country'],
+      [/^seated[- ]?shot[- ]?put$/i,           () => 'Seated Shot Put'],
+      [/^seated[- ]?discus$/i,                 () => 'Seated Discus'],
+      [/^seated[- ]?(\d+)[- ]?m(?:eter)?[- ]?(dash|run)?$/i, (m) => `Seated ${m[1]}m`],
+      [/^wheelchair[- ]?(\d+)[- ]?m(?:eter)?[- ]?(dash|run)?$/i, (m) => `Seated ${m[1]}m`],
+    ];
+
+    for (const [pat, fn] of maps) {
+      const match = h.match(pat);
+      if (match) return fn(match);
+    }
+    h = h.replace(/(\d+)\s+[Mm]eters?/g, '$1').replace(/(\d+)[Mm]\b/g, '$1');
+    return h;
+  }
+
+  function getTeamScores(gender) {
+    const scores = {};
+    (currentParsedSections[gender] || []).forEach(evt => {
+      const isWC = isWheelchairEvent(evt.header);
+      const isScoreableEvt = isScoreable(evt.header, evt._forceNonScoring || false);
+      const ptsMap = calculateTiedPoints(evt.entries, evt.kind === 'relay', isWC, isScoreableEvt);
+      evt.entries.forEach(entry => {
+        const pts = ptsMap.get(entry) || 0;
+        if (pts > 0 && entry.school) {
+          const sch = cleanSchoolName(entry.school);
+          if (sch) scores[sch] = (scores[sch] || 0) + pts;
+        }
+      });
+    });
+    return scores;
+  }
+
+  function buildAPSection(gender) {
+    const evts = currentParsedSections[gender] || [];
+    if (evts.length === 0) return '';
+
+    const abbrMap = buildSchoolAbbrMap(currentParsedSections);
+    const abbr = (school) => abbrMap[cleanSchoolName(school || '').trim()] || apSchoolAbbr(school);
+
+    // Score header
+    let scoreHeader = '';
+    const isTrack = (mt !== 'cross_country' && mt !== 'college_xc');
+    if (isTrack) {
+      const scores = getTeamScores(gender);
+      const sorted = Object.entries(scores).sort((a,b) => b[1]-a[1]);
+      const gLabel = isCollege
+        ? (gender === 'girls' ? 'Women' : 'Men')
+        : (gender === 'girls' ? 'Girls' : 'Boys');
+      if (sorted.length >= 1) {
+        const fmt = (v) => Number(v.toFixed(2)).toString().replace(/\.00$/,'');
+        scoreHeader = `${gLabel} - ` + sorted.map(([s,v]) => `${s} ${fmt(v)}`).join(', ');
+      }
+    }
+
+    const FIELD_ORDER = ['shot put','discus','hammer','javelin','high jump','long jump','triple jump','pole vault'];
+    function evtSortKey(evt) {
+      const name = apEventName(evt.header).toLowerCase();
+      for (let i = 0; i < FIELD_ORDER.length; i++) {
+        if (name.includes(FIELD_ORDER[i])) return i;
+      }
+      if (/seated.*shot/i.test(evt.header)) return 8;
+      if (/seated.*disc/i.test(evt.header)) return 9;
+      const relayM = evt.header.match(/(\d[\d,]*)\s*[- ]?meter[- ]relay/i) || evt.header.match(/(\d+)\s*m[- ]relay/i);
+      const runM   = evt.header.match(/(\d+)/);
+      if (evt.kind === 'relay' && relayM) return 100 + parseInt(relayM[1].replace(/,/g,''));
+      if (runM) return 200 + parseInt(runM[1]);
+      return 999;
+    }
+
+    const sortedEvts = [...evts].sort((a,b) => evtSortKey(a) - evtSortKey(b));
+    const parts = [];
+
+    sortedEvts.forEach(evt => {
+      const evtName = apEventName(evt.header);
+      if (!evtName) return;
+
+      const validEntries = sortEntries(evt.entries.filter(e => {
+        const r = (e.result || '').trim().toUpperCase();
+        return !/^(DQ|DNS|DNF|FS|SCR|NT|NM|NH|FOUL)$/.test(r) && parseTimeToSeconds(e.result) !== Infinity;
+      }));
+      if (validEntries.length === 0) return;
+
+      const depthRaw = document.querySelector('.ap-depth-btn.bg-rose-600')?.dataset?.apdepth || '1';
+      const depth = depthRaw === 'all' ? Infinity : parseInt(depthRaw);
+      const displayEntries = validEntries.slice(0, depth);
+      const winner = displayEntries[0];
+      let segment = '';
+
+      // Read name format preference from toggle (default: last only)
+      const nameFmt = document.querySelector('.ap-name-btn.bg-rose-600')?.dataset?.apname || 'last';
+
+      // Format a single athlete name per the selected style.
+      // Input may be "First Last" or "Last, First" (flipName already applied upstream in some paths,
+      // but here we work from the raw entry.name which is stored as entered).
+      function apFormatName(rawName) {
+        const n = (rawName || '').trim();
+        if (!n) return n;
+        // Detect "Last, First" format
+        let first = '', last = '';
+        if (n.includes(',')) {
+          const parts = n.split(',').map(p => p.trim());
+          last  = parts[0];
+          first = parts.slice(1).join(' ').trim();
+        } else {
+          const parts = n.split(/\s+/);
+          first = parts.slice(0, -1).join(' ');
+          last  = parts[parts.length - 1];
+        }
+        if (nameFmt === 'full') return first ? `${first} ${last}` : last;
+        if (nameFmt === 'first_initial') return first ? `${first[0]}.${last}` : last;
+        return last; // 'last'
+      }
+
+      // Same logic for relay member names (stored as "First Last" typically)
+      function apFormatMember(rawName) {
+        const n = (rawName || '').trim();
+        if (!n) return n;
+        const parts = n.split(/\s+/);
+        const first = parts.slice(0, -1).join(' ');
+        const last  = parts[parts.length - 1];
+        if (nameFmt === 'full') return n;
+        if (nameFmt === 'first_initial') return first ? `${first[0]}.${last}` : last;
+        return last;
+      }
+
+      if (evt.kind === 'relay') {
+        const school = cleanSchoolName(winner.school || '');
+        const members = (winner.members || []);
+        if (members.length > 0) {
+          const memberNames = members.map(m => apFormatMember(m.name || ''));
+          segment = `${evtName}: ${school} (${memberNames.join(', ')}) ${winner.result}`;
+        } else {
+          segment = `${evtName}: ${school} (${abbr(school)}) ${winner.result}`;
+        }
+      } else {
+        segment = `${evtName}: ${apFormatName(winner.name)} (${abbr(winner.school)}) ${winner.result}`;
+      }
+
+      // Append additional finishers when depth > 1
+      if (segment && depth > 1 && displayEntries.length > 1) {
+        const extras = displayEntries.slice(1).map((e, idx) => {
+          if (evt.kind === 'relay') {
+            return `${idx+2}. ${cleanSchoolName(e.school||'')} ${e.result}`;
+          }
+          return `${idx+2}. ${apFormatName(e.name)} (${abbr(e.school)}) ${e.result}`;
+        });
+        segment += ', ' + extras.join(', ');
+      }
+
+      if (segment) parts.push(segment);
+    });
+
+    if (parts.length === 0) return '';
+    const body = parts.join(', ') + '.';
+    return scoreHeader ? `${scoreHeader}\n\n${body}` : body;
+    return scoreHeader ? `${scoreHeader}\n\n${body}` : body;
+  }
+
+  const genderSections = [];
+  const order = girlsFirst ? ['girls','boys'] : ['boys','girls'];
+  order.forEach(gender => {
+    if (gender === 'girls' && !incGirls) return;
+    if (gender === 'boys'  && !incBoys)  return;
+    const sec = buildAPSection(gender);
+    if (sec) genderSections.push(sec);
+  });
+
+  return genderSections.join('\n\n\n');
+}
+
+function exportAPStyle() {
+  if (!currentParsedSections) {
+    toast('No compiled data to export.');
+    return;
+  }
+  setTab('ap');
+  const apText = document.getElementById('outAp').textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(apText)
+      .then(() => toast('AP Style copied to clipboard!'))
+      .catch(() => { _legacyCopy(apText); toast('AP Style copied!'); });
+  } else {
+    _legacyCopy(apText);
+    toast('AP Style copied!');
+  }
 }
 
 function exportToCSV() {
@@ -3679,9 +4010,42 @@ document.getElementById('clearBtn').addEventListener('click', () => {
 document.getElementById('tabPreview').addEventListener('click', ()=>setTab('preview'));
 document.getElementById('tabHtml').addEventListener('click',    ()=>setTab('html'));
 document.getElementById('tabText').addEventListener('click',    ()=>setTab('text'));
+document.getElementById('tabAp').addEventListener('click',      ()=>setTab('ap'));
+document.querySelectorAll('.ap-name-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ap-name-btn').forEach(b => {
+      b.className = 'ap-name-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700';
+    });
+    btn.className = 'ap-name-btn px-2 py-1 bg-rose-600 text-white';
+    if (currentParsedSections) document.getElementById('outAp').textContent = buildAPText();
+  });
+});
+
+document.querySelectorAll('.ap-depth-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ap-depth-btn').forEach(b => {
+      b.className = 'ap-depth-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700';
+    });
+    btn.className = 'ap-depth-btn px-2 py-1 bg-rose-600 text-white';
+    if (currentParsedSections) document.getElementById('outAp').textContent = buildAPText();
+  });
+});
+document.getElementById('copyApBtn').addEventListener('click',  () => {
+  const apText = document.getElementById('outAp').textContent;
+  if (!apText) { toast('No AP text yet.'); return; }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(apText)
+      .then(() => toast('AP Style copied!'))
+      .catch(() => { _legacyCopy(apText); toast('AP Style copied!'); });
+  } else {
+    _legacyCopy(apText);
+    toast('AP Style copied!');
+  }
+});
 document.getElementById('copyBtn').addEventListener('click',    copyContent);
 document.getElementById('printBtn').addEventListener('click',   printResults);
 document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
+document.getElementById('exportApBtn').addEventListener('click', exportAPStyle);
 document.getElementById('copyTableBtn').addEventListener('click', copyAsTable);
 document.getElementById('downloadBtn').addEventListener('click',downloadHtm);
 document.getElementById('consoleToggle').addEventListener('click', () => {
