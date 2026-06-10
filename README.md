@@ -1,3 +1,3 @@
 I've been uploading a lot of old results to both Milesplit and Athletic.net over the years and more so ANet since the OHSAA switched. I found that HyTek Meet Manager Flat HTML Files always worked well and I prefer the look of those results. I was able to make this to easily copy and paste results from those sites as well as TFRRS results (haven't tested those as much yet) and you can upload some other types of html output to make it look like that. It's been fun experimenting with this and it seems to be working for what I need right now.
 
-I also added an export to AP News Style format as well.
+I also added an export to AP News Style format as well as Semicolon-Delimited results.
