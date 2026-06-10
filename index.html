@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50 dark:bg-slate-900">
 <head>
@@ -382,6 +383,9 @@ body { font-family: 'Inter', sans-serif; }
         </button>
         <button id="exportCsvBtn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
           <i class="fa-solid fa-file-csv mr-1"></i>Export CSV
+        </button>
+        <button id="exportSemiBtn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-teal-600 dark:text-teal-400 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+          <i class="fa-solid fa-grip-lines-vertical mr-1"></i>Export Semicolon
         </button>
         <button id="copyTableBtn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-violet-600 dark:text-violet-400 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
           <i class="fa-solid fa-table mr-1"></i>Copy Table
@@ -3570,26 +3574,29 @@ function buildAPText() {
         return last;
       }
 
+      // Strip wind readings from AP results — only show the time/mark
+      const apResult = (r) => splitTimeWind(r || '').time.trim();
+
       if (evt.kind === 'relay') {
         const school = cleanSchoolName(winner.school || '');
         const members = (winner.members || []);
         if (members.length > 0) {
           const memberNames = members.map(m => apFormatMember(m.name || ''));
-          segment = `${evtName}: ${school} (${memberNames.join(', ')}) ${winner.result}`;
+          segment = `${evtName}: ${school} (${memberNames.join(', ')}) ${apResult(winner.result)}`;
         } else {
-          segment = `${evtName}: ${school} (${abbr(school)}) ${winner.result}`;
+          segment = `${evtName}: ${school} (${abbr(school)}) ${apResult(winner.result)}`;
         }
       } else {
-        segment = `${evtName}: ${apFormatName(winner.name)} (${abbr(winner.school)}) ${winner.result}`;
+        segment = `${evtName}: ${apFormatName(winner.name)} (${abbr(winner.school)}) ${apResult(winner.result)}`;
       }
 
       // Append additional finishers when depth > 1
       if (segment && depth > 1 && displayEntries.length > 1) {
         const extras = displayEntries.slice(1).map((e, idx) => {
           if (evt.kind === 'relay') {
-            return `${idx+2}. ${cleanSchoolName(e.school||'')} ${e.result}`;
+            return `${idx+2}. ${cleanSchoolName(e.school||'')} ${apResult(e.result)}`;
           }
-          return `${idx+2}. ${apFormatName(e.name)} (${abbr(e.school)}) ${e.result}`;
+          return `${idx+2}. ${apFormatName(e.name)} (${abbr(e.school)}) ${apResult(e.result)}`;
         });
         segment += ', ' + extras.join(', ');
       }
@@ -3599,7 +3606,6 @@ function buildAPText() {
 
     if (parts.length === 0) return '';
     const body = parts.join(', ') + '.';
-    return scoreHeader ? `${scoreHeader}\n\n${body}` : body;
     return scoreHeader ? `${scoreHeader}\n\n${body}` : body;
   }
 
@@ -3617,19 +3623,10 @@ function buildAPText() {
 
 function exportAPStyle() {
   if (!currentParsedSections) {
-    toast('No compiled data to export.');
+    toast('No compiled data yet.');
     return;
   }
   setTab('ap');
-  const apText = document.getElementById('outAp').textContent;
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(apText)
-      .then(() => toast('AP Style copied to clipboard!'))
-      .catch(() => { _legacyCopy(apText); toast('AP Style copied!'); });
-  } else {
-    _legacyCopy(apText);
-    toast('AP Style copied!');
-  }
 }
 
 function exportToCSV() {
@@ -3683,6 +3680,58 @@ function exportToCSV() {
   link.click();
   document.body.removeChild(link);
   toast('CSV exported!');
+}
+
+function exportToSemicolon() {
+  if (!currentParsedSections) {
+    toast('No compiled data to export.');
+    return;
+  }
+
+  let out = 'Event;Gender;Place;Athlete/Relay;Grade;School;Result;Points\n';
+  const isXC = (document.getElementById('meetType').value === 'cross_country' || document.getElementById('meetType').value === 'college_xc');
+  const incGirls = document.getElementById('includeGirlsCheck').checked;
+  const incBoys  = document.getElementById('includeBoysCheck').checked;
+  const esc = (val) => String(val).replace(/;/g, ',');
+
+  ['girls', 'boys'].forEach(gender => {
+    if (gender === 'girls' && !incGirls) return;
+    if (gender === 'boys'  && !incBoys)  return;
+
+    const evts = currentParsedSections[gender] || [];
+    evts.forEach(evt => {
+      let ptsMap;
+      if (isXC) {
+        ptsMap = scoreXCEvent(evt.entries).ptsMap;
+      } else {
+        const isWC = isWheelchairEvent(evt.header);
+        const isScoreableEvt = isScoreable(evt.header, evt._forceNonScoring || false);
+        ptsMap = calculateTiedPoints(evt.entries, evt.kind === 'relay', isWC, isScoreableEvt);
+      }
+
+      evt.entries.forEach(entry => {
+        const place  = entry.place || '';
+        const name   = isXC ? (entry.name || '') : (evt.kind === 'relay' ? (entry.school || '') : (entry.name || ''));
+        const grade  = evt.kind === 'relay' ? '' : (entry.year || '');
+        const school = cleanSchoolName(entry.school || '');
+        const result = entry.result || '';
+        const raw    = ptsMap.get(entry);
+        const pts    = (raw !== undefined && raw !== '') ? raw : 0;
+        const ptsStr = pts > 0 ? Number(pts.toFixed(2)).toString().replace(/\.00$/, '') : '';
+        out += `${esc(evt.header)};${esc(gender)};${esc(place)};${esc(name)};${esc(grade)};${esc(school)};${esc(result)};${esc(ptsStr)}\n`;
+      });
+    });
+  });
+
+  const blob = new Blob([out], { type: 'text/plain;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url  = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', (document.getElementById('meetTitle').value.trim().replace(/\s+/g, '_') || 'meet_results') + '_semicolon.txt');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  toast('Semicolon-delimited file exported!');
 }
 
 function copyAsTable() {
@@ -4045,6 +4094,7 @@ document.getElementById('copyApBtn').addEventListener('click',  () => {
 document.getElementById('copyBtn').addEventListener('click',    copyContent);
 document.getElementById('printBtn').addEventListener('click',   printResults);
 document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
+document.getElementById('exportSemiBtn').addEventListener('click', exportToSemicolon);
 document.getElementById('exportApBtn').addEventListener('click', exportAPStyle);
 document.getElementById('copyTableBtn').addEventListener('click', copyAsTable);
 document.getElementById('downloadBtn').addEventListener('click',downloadHtm);
