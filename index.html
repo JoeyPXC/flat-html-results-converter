@@ -1,3 +1,8 @@
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50 dark:bg-slate-900">
 <head>
@@ -446,6 +451,9 @@ body { font-family: 'Inter', sans-serif; }
             </div>
             <button id="copyApBtn" class="text-xs font-semibold px-3 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 dark:bg-rose-900/30 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 transition flex items-center gap-1.5">
               <i class="fa-regular fa-copy"></i> Copy
+            </button>
+            <button id="saveApBtn" class="text-xs font-semibold px-3 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 dark:bg-rose-900/30 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-download"></i> Save .txt
             </button>
           </div>
         </div>
@@ -3374,6 +3382,12 @@ function buildAPText() {
   const girlsFirst = document.getElementById('girlsFirstCheck').checked;
   const isCollege = (mt === 'college_xc');
 
+  // Build meet title header for AP output
+  const meetTitle = document.getElementById('meetTitle').value.trim();
+  const meetDate  = document.getElementById('meetDate').value.trim();
+  const meetVenue = document.getElementById('meetVenue').value.trim();
+  const apHeader  = [meetTitle, meetVenue, meetDate].filter(Boolean).join('\n');
+
   function apSchoolAbbr(school) {
     const s = cleanSchoolName(school || '').trim();
     if (!s) return '';
@@ -3572,14 +3586,14 @@ function buildAPText() {
           ? (gender === 'girls' ? 'WOMEN' : 'MEN')
           : (gender === 'girls' ? 'GIRLS' : 'BOYS'));
 
-    // Team standings line — format: "1, Perry 47; 2, North Canton Hoover 70; ..."
+    // Team standings line — complete teams with score, incomplete teams appended without score
     let standingsLine = '';
-    if (teamStandings.length > 0) {
+    if (teamStandings.length > 0 || xcScore.incompleteSchools.length > 0) {
       const standingLabel = 'Team standings';
-      standingsLine = standingLabel + ': ' + teamStandings.map((t, i) => {
-        const tName = t.school;
-        return `${i + 1}, ${tName} ${t.score}`;
-      }).join('; ') + '.';
+      const completeEntries = teamStandings.map((t, i) => `${i + 1}, ${t.school} ${t.score}`);
+      const incompleteEntries = xcScore.incompleteSchools.map(s => s);
+      const allEntries = [...completeEntries, ...incompleteEntries];
+      standingsLine = standingLabel + ': ' + allEntries.join('; ') + '.';
     }
 
     // Individual results line — format: "1, Collins (NC) 16:25; 2, Ogline (A) 16:42; ..."
@@ -3688,7 +3702,8 @@ function buildAPText() {
     if (sec) genderSections.push(sec);
   });
 
-  return genderSections.join('\n\u2015\u2015\u2015\n');
+  const body = genderSections.join('\n\u2015\u2015\u2015\n');
+  return apHeader ? `${apHeader}\n\n${body}` : body;
 }
 
 function exportAPStyle() {
@@ -4199,6 +4214,20 @@ document.getElementById('copyApBtn').addEventListener('click',  () => {
     _legacyCopy(apText);
     toast('AP Style copied!');
   }
+});
+document.getElementById('saveApBtn').addEventListener('click', () => {
+  const apText = document.getElementById('outAp').textContent;
+  if (!apText) { toast('No AP text yet.'); return; }
+  const meetTitle = document.getElementById('meetTitle').value.trim() || 'ap-results';
+  const safeName = meetTitle.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+  const blob = new Blob([apText], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${safeName}-ap.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('AP Style saved!');
 });
 document.getElementById('copyBtn').addEventListener('click',    copyContent);
 document.getElementById('printBtn').addEventListener('click',   printResults);
