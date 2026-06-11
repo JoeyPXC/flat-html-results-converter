@@ -1,6 +1,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50 dark:bg-slate-900">
 <head>
@@ -378,9 +379,6 @@ body { font-family: 'Inter', sans-serif; }
         </span>
       </div>
       <div class="flex flex-wrap items-center gap-1.5 output-btn-row">
-        <button id="exportApBtn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
-          <i class="fa-solid fa-newspaper mr-1"></i>AP Style
-        </button>
         <button id="exportCsvBtn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
           <i class="fa-solid fa-file-csv mr-1"></i>Export CSV
         </button>
@@ -4095,7 +4093,6 @@ document.getElementById('copyBtn').addEventListener('click',    copyContent);
 document.getElementById('printBtn').addEventListener('click',   printResults);
 document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
 document.getElementById('exportSemiBtn').addEventListener('click', exportToSemicolon);
-document.getElementById('exportApBtn').addEventListener('click', exportAPStyle);
 document.getElementById('copyTableBtn').addEventListener('click', copyAsTable);
 document.getElementById('downloadBtn').addEventListener('click',downloadHtm);
 document.getElementById('consoleToggle').addEventListener('click', () => {
