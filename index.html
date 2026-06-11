@@ -2,12 +2,13 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50 dark:bg-slate-900">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Track &amp; XC Flat HTML Converter</title>
+<title>Track &amp; XC Flat HTML / AP Style Converter</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 tailwind.config = {
@@ -177,7 +178,7 @@ body { font-family: 'Inter', sans-serif; }
       </div>
       <div>
         <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-          Track &amp; XC Flat HTML Converter
+          Track &amp; XC Flat HTML / AP Style Converter
           <span id="modeBadge" class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">Track Mode</span>
         </h1>
         <p class="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-y-1">
@@ -420,18 +421,33 @@ body { font-family: 'Inter', sans-serif; }
         <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100 dark:border-slate-800 flex-wrap gap-2">
           <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-newspaper"></i> AP Newspaper Style</span>
           <div class="flex items-center gap-2">
-            <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Show:</span>
-            <div class="flex rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 text-[11px] font-semibold">
+            <!-- Track depth (hidden in XC mode) -->
+            <span id="apTrackDepthLabel" class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Show:</span>
+            <div id="apTrackDepthGroup" class="flex rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 text-[11px] font-semibold">
               <button data-apdepth="1"   class="ap-depth-btn px-2 py-1 bg-rose-600 text-white">1st</button>
               <button data-apdepth="3"   class="ap-depth-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">1-3</button>
               <button data-apdepth="8"   class="ap-depth-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">1-8</button>
               <button data-apdepth="all" class="ap-depth-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">All</button>
+            </div>
+            <!-- XC runner depth (hidden in Track mode) -->
+            <span id="apXcDepthLabel" class="hidden text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Runners:</span>
+            <div id="apXcDepthGroup" class="hidden flex rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 text-[11px] font-semibold">
+              <button data-xcrunners="20"  class="ap-xcrunners-btn px-2 py-1 bg-rose-600 text-white">Top 20</button>
+              <button data-xcrunners="25"  class="ap-xcrunners-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">Top 25</button>
+              <button data-xcrunners="30"  class="ap-xcrunners-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">Top 30</button>
+              <button data-xcrunners="50"  class="ap-xcrunners-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">Top 50</button>
+              <button data-xcrunners="all" class="ap-xcrunners-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">All</button>
             </div>
             <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Name:</span>
             <div class="flex rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 text-[11px] font-semibold">
               <button data-apname="last"  class="ap-name-btn px-2 py-1 bg-rose-600 text-white">Last</button>
               <button data-apname="first_initial" class="ap-name-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">F. Last</button>
               <button data-apname="full"  class="ap-name-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">Full</button>
+            </div>
+            <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Team:</span>
+            <div class="flex rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 text-[11px] font-semibold">
+              <button data-apteam="abbr" class="ap-team-btn px-2 py-1 bg-rose-600 text-white">Abbr</button>
+              <button data-apteam="full" class="ap-team-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">Full</button>
             </div>
             <button id="copyApBtn" class="text-xs font-semibold px-3 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 dark:bg-rose-900/30 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 transition flex items-center gap-1.5">
               <i class="fa-regular fa-copy"></i> Copy
@@ -3479,16 +3495,118 @@ function buildAPText() {
     return scores;
   }
 
+  // Read shared toggle preferences
+  const nameFmt   = document.querySelector('.ap-name-btn.bg-rose-600')?.dataset?.apname   || 'last';
+  const teamFmt   = document.querySelector('.ap-team-btn.bg-rose-600')?.dataset?.apteam   || 'abbr';
+  const abbrMap   = buildSchoolAbbrMap(currentParsedSections);
+  const abbr      = (school) => abbrMap[cleanSchoolName(school || '').trim()] || apSchoolAbbr(school);
+  const teamLabel = (school) => {
+    const s = cleanSchoolName(school || '').trim();
+    return teamFmt === 'full' ? s : (abbr(school) || s);
+  };
+
+  // Format a single athlete name per the selected style.
+  function apFormatName(rawName) {
+    const n = (rawName || '').trim();
+    if (!n) return n;
+    let first = '', last = '';
+    if (n.includes(',')) {
+      const parts = n.split(',').map(p => p.trim());
+      last  = parts[0];
+      first = parts.slice(1).join(' ').trim();
+    } else {
+      const parts = n.split(/\s+/);
+      first = parts.slice(0, -1).join(' ');
+      last  = parts[parts.length - 1];
+    }
+    if (nameFmt === 'full') return first ? `${first} ${last}` : last;
+    if (nameFmt === 'first_initial') return first ? `${first[0]}. ${last}` : last;
+    return last; // 'last'
+  }
+
+  // Format relay member names
+  function apFormatMember(rawName) {
+    const n = (rawName || '').trim();
+    if (!n) return n;
+    const parts = n.split(/\s+/);
+    const first = parts.slice(0, -1).join(' ');
+    const last  = parts[parts.length - 1];
+    if (nameFmt === 'full') return n;
+    if (nameFmt === 'first_initial') return first ? `${first[0]}. ${last}` : last;
+    return last;
+  }
+
+  // Strip wind readings from AP results
+  const apResult = (r) => splitTimeWind(r || '').time.trim();
+
+  // ── XC newspaper-style AP output ────────────────────────────────────────────
+  const isXC = (mt === 'cross_country' || mt === 'college_xc');
+
+  function buildXCAPSection(gender) {
+    const evts = currentParsedSections[gender] || [];
+    if (evts.length === 0) return '';
+
+    // Gather all runner entries from all XC events for this gender
+    // (normally there's one race per gender, but collect them all)
+    const allEntries = [];
+    evts.forEach(evt => {
+      evt.entries.forEach(e => {
+        const r = (e.result || '').trim().toUpperCase();
+        if (!/^(DQ|DNS|DNF|FS|SCR|NT|NM|NH|FOUL)$/.test(r) && parseTimeToSeconds(e.result) !== Infinity) {
+          allEntries.push(e);
+        }
+      });
+    });
+    if (allEntries.length === 0) return '';
+
+    // Sort runners by time
+    const sortedRunners = [...allEntries].sort((a, b) => parseTimeToSeconds(a.result) - parseTimeToSeconds(b.result));
+
+    // Re-score to get team standings using scoreXCEvent logic
+    const xcScore = scoreXCEvent(sortedRunners);
+    const teamStandings = xcScore.teamStandings; // already sorted
+
+    // How many runners to display
+    const xcRunnersRaw = document.querySelector('.ap-xcrunners-btn.bg-rose-600')?.dataset?.xcrunners || '20';
+    const xcRunnersLimit = xcRunnersRaw === 'all' ? Infinity : parseInt(xcRunnersRaw);
+
+    const customHeader = getCustomXCHeader(gender);
+    const gLabel = customHeader
+      ? customHeader.toUpperCase()
+      : (isCollege
+          ? (gender === 'girls' ? 'WOMEN' : 'MEN')
+          : (gender === 'girls' ? 'GIRLS' : 'BOYS'));
+
+    // Team standings line — format: "1, Perry 47; 2, North Canton Hoover 70; ..."
+    let standingsLine = '';
+    if (teamStandings.length > 0) {
+      const standingLabel = 'Team standings';
+      standingsLine = standingLabel + ': ' + teamStandings.map((t, i) => {
+        const tName = t.school;
+        return `${i + 1}, ${tName} ${t.score}`;
+      }).join('; ') + '.';
+    }
+
+    // Individual results line — format: "1, Collins (NC) 16:25; 2, Ogline (A) 16:42; ..."
+    const displayRunners = sortedRunners.slice(0, xcRunnersLimit);
+    const indivLine = 'Individual results: ' + displayRunners.map((e, i) => {
+      const name = apFormatName(e.name);
+      const team = teamLabel(e.school);
+      const time = apResult(e.result);
+      return team ? `${i + 1}, ${name} (${team}) ${time}` : `${i + 1}, ${name} ${time}`;
+    }).join('; ') + '.';
+
+    return `${gLabel}\n\n${standingsLine}\n\n${indivLine}`;
+  }
+
+  // ── Track AP output ─────────────────────────────────────────────────────────
   function buildAPSection(gender) {
     const evts = currentParsedSections[gender] || [];
     if (evts.length === 0) return '';
 
-    const abbrMap = buildSchoolAbbrMap(currentParsedSections);
-    const abbr = (school) => abbrMap[cleanSchoolName(school || '').trim()] || apSchoolAbbr(school);
-
     // Score header
     let scoreHeader = '';
-    const isTrack = (mt !== 'cross_country' && mt !== 'college_xc');
+    const isTrack = !isXC;
     if (isTrack) {
       const scores = getTeamScores(gender);
       const sorted = Object.entries(scores).sort((a,b) => b[1]-a[1]);
@@ -3535,46 +3653,6 @@ function buildAPText() {
       const winner = displayEntries[0];
       let segment = '';
 
-      // Read name format preference from toggle (default: last only)
-      const nameFmt = document.querySelector('.ap-name-btn.bg-rose-600')?.dataset?.apname || 'last';
-
-      // Format a single athlete name per the selected style.
-      // Input may be "First Last" or "Last, First" (flipName already applied upstream in some paths,
-      // but here we work from the raw entry.name which is stored as entered).
-      function apFormatName(rawName) {
-        const n = (rawName || '').trim();
-        if (!n) return n;
-        // Detect "Last, First" format
-        let first = '', last = '';
-        if (n.includes(',')) {
-          const parts = n.split(',').map(p => p.trim());
-          last  = parts[0];
-          first = parts.slice(1).join(' ').trim();
-        } else {
-          const parts = n.split(/\s+/);
-          first = parts.slice(0, -1).join(' ');
-          last  = parts[parts.length - 1];
-        }
-        if (nameFmt === 'full') return first ? `${first} ${last}` : last;
-        if (nameFmt === 'first_initial') return first ? `${first[0]}.${last}` : last;
-        return last; // 'last'
-      }
-
-      // Same logic for relay member names (stored as "First Last" typically)
-      function apFormatMember(rawName) {
-        const n = (rawName || '').trim();
-        if (!n) return n;
-        const parts = n.split(/\s+/);
-        const first = parts.slice(0, -1).join(' ');
-        const last  = parts[parts.length - 1];
-        if (nameFmt === 'full') return n;
-        if (nameFmt === 'first_initial') return first ? `${first[0]}.${last}` : last;
-        return last;
-      }
-
-      // Strip wind readings from AP results — only show the time/mark
-      const apResult = (r) => splitTimeWind(r || '').time.trim();
-
       if (evt.kind === 'relay') {
         const school = cleanSchoolName(winner.school || '');
         const members = (winner.members || []);
@@ -3582,10 +3660,10 @@ function buildAPText() {
           const memberNames = members.map(m => apFormatMember(m.name || ''));
           segment = `${evtName}: ${school} (${memberNames.join(', ')}) ${apResult(winner.result)}`;
         } else {
-          segment = `${evtName}: ${school} (${abbr(school)}) ${apResult(winner.result)}`;
+          segment = `${evtName}: ${school} (${teamLabel(school)}) ${apResult(winner.result)}`;
         }
       } else {
-        segment = `${evtName}: ${apFormatName(winner.name)} (${abbr(winner.school)}) ${apResult(winner.result)}`;
+        segment = `${evtName}: ${apFormatName(winner.name)} (${teamLabel(winner.school)}) ${apResult(winner.result)}`;
       }
 
       // Append additional finishers when depth > 1
@@ -3594,7 +3672,7 @@ function buildAPText() {
           if (evt.kind === 'relay') {
             return `${idx+2}. ${cleanSchoolName(e.school||'')} ${apResult(e.result)}`;
           }
-          return `${idx+2}. ${apFormatName(e.name)} (${abbr(e.school)}) ${apResult(e.result)}`;
+          return `${idx+2}. ${apFormatName(e.name)} (${teamLabel(e.school)}) ${apResult(e.result)}`;
         });
         segment += ', ' + extras.join(', ');
       }
@@ -3612,11 +3690,11 @@ function buildAPText() {
   order.forEach(gender => {
     if (gender === 'girls' && !incGirls) return;
     if (gender === 'boys'  && !incBoys)  return;
-    const sec = buildAPSection(gender);
+    const sec = isXC ? buildXCAPSection(gender) : buildAPSection(gender);
     if (sec) genderSections.push(sec);
   });
 
-  return genderSections.join('\n\n\n');
+  return genderSections.join('\n\u2015\u2015\u2015\n');
 }
 
 function exportAPStyle() {
@@ -4036,6 +4114,25 @@ function updateUIVisuals(mode) {
     document.getElementById('xcScoringRow').classList.add('hidden');
     document.getElementById('trackScoringRow').classList.remove('hidden');
   }
+
+  // Toggle AP pane depth controls based on mode
+  const xcDepthLabel  = document.getElementById('apXcDepthLabel');
+  const xcDepthGroup  = document.getElementById('apXcDepthGroup');
+  const trDepthLabel  = document.getElementById('apTrackDepthLabel');
+  const trDepthGroup  = document.getElementById('apTrackDepthGroup');
+  if (xcDepthLabel && xcDepthGroup && trDepthLabel && trDepthGroup) {
+    if (isXC) {
+      xcDepthLabel.classList.remove('hidden');
+      xcDepthGroup.classList.remove('hidden');
+      trDepthLabel.classList.add('hidden');
+      trDepthGroup.classList.add('hidden');
+    } else {
+      xcDepthLabel.classList.add('hidden');
+      xcDepthGroup.classList.add('hidden');
+      trDepthLabel.classList.remove('hidden');
+      trDepthGroup.classList.remove('hidden');
+    }
+  }
 }
 
 document.getElementById('processBtn').addEventListener('click', () => {
@@ -4074,6 +4171,26 @@ document.querySelectorAll('.ap-depth-btn').forEach(btn => {
       b.className = 'ap-depth-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700';
     });
     btn.className = 'ap-depth-btn px-2 py-1 bg-rose-600 text-white';
+    if (currentParsedSections) document.getElementById('outAp').textContent = buildAPText();
+  });
+});
+
+document.querySelectorAll('.ap-xcrunners-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ap-xcrunners-btn').forEach(b => {
+      b.className = 'ap-xcrunners-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700';
+    });
+    btn.className = 'ap-xcrunners-btn px-2 py-1 bg-rose-600 text-white';
+    if (currentParsedSections) document.getElementById('outAp').textContent = buildAPText();
+  });
+});
+
+document.querySelectorAll('.ap-team-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ap-team-btn').forEach(b => {
+      b.className = 'ap-team-btn px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700';
+    });
+    btn.className = 'ap-team-btn px-2 py-1 bg-rose-600 text-white';
     if (currentParsedSections) document.getElementById('outAp').textContent = buildAPText();
   });
 });
