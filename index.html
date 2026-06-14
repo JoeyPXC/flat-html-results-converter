@@ -20,29 +20,1234 @@ tailwind.config = {
 }
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght=400;500&family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="data:image/png;base64,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" rel="icon" type="image/png">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
-  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #64748b; }
-  @media print {
-    .no-print { display: none !important; }
-    .bg-slate-950.border-b, #paneHtml, #paneText { display: none !important; }
-    main { display: block !important; }
-    section:last-of-type { width: 100% !important; height: auto !important; overflow: visible !important; background: #ffffff !important; padding: 0 !important; }
-    #panePreview { display: block !important; background: #ffffff !important; color: #000000 !important; border: none !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; width: 100% !important; }
-    #outPreview { color: #000000 !important; background: #ffffff !important; text-shadow: none !important; font-size: 9.5pt !important; line-height: 1.25 !important; white-space: pre !important; width: 100% !important; }
-  }
-</style>
+<link rel="icon" type="image/png" href="data:image/png;base64,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仁rQmlv6WbZt0gAAnpD7o/N+N/v/V7ZAnf6f9wZ9V98oPj3P6Vw9g9/vPvdP/+v6v5m+P+pC/HrfP13rPHzM3fXunZ6n/7v/fHfz6vNznm07z/+ff/vv8df9vKz913e2fWw/pT3Nve3/un+WfWw/pT3Nv6P98df9t3e2frfP/O/M36399e69vp/3DveP98t3tnd6t2und/m73yP9r6d/t3vle9szvdWdf9tne2dre/tzf3d3O3+P9re+vdO9/f+r/2vp3+3fudP8m7t3erf7Z7bHulPbX+nd3vke9szvbe9u98/6//2/re///f3fnd6p7ZH+v8m7u9O9vT273x/33un/We3f+t/fPevf3fne/t7untr/Tu9M9vdWd//3bmd3v//bOd7f7f3t3e7p7bE6wAFAAA=" rel="icon">
 </head>
-<body class="h-full flex flex-col text-slate-800 dark:text-slate-100 transition-colors duration-200">
-<header class="bg-white dark:bg-black border-b border-slate-200 dark:border-slate-900 py-3 px-6 shrink-0 shadow-sm z-20">
-  <div class="max-w-7xl mx-auto flex flex-col xl:flex-row items-center justify-between gap-4">
-    <div class="flex items-center space-x-3">
-      <div class="p-2 bg-indigo-600 text-white rounded-lg shadow-md shadow-indigo-500/20"><i class="fa-solid fa-bolt text-lg"></i></div>
-      <div>
-        <h1 class="text-sm font-bold tracking-tight text-slate-900 dark:text-white flex items-center">
-          XC/TRACK AP CONVERTER
-          <span class="ml-2 px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 text-[10px] uppercase
+<body class="h-full font-sans text-slate-900 dark:text-slate-100 antialiased flex flex-col">
+
+  <header class="bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-900 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20">
+          T
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-slate-900 dark:text-white leading-tight">Track &amp; XC Converter</h1>
+          <p class="text-[10px] text-slate-500 font-mono tracking-wider uppercase">AP Style &amp; Flat HTML Generator</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-4">
+        <div class="bg-slate-100 dark:bg-slate-900 p-1 rounded-lg flex gap-1 border border-slate-200 dark:border-slate-800">
+          <button id="modeXC" class="px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L16 4m0 13V4m0 0L9 7" /></svg>
+            Cross Country
+          </button>
+          <button id="modeTrack" class="px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            Track &amp; Field
+          </button>
+        </div>
+        
+        <input type="hidden" id="meetType" value="cross_country">
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch overflow-hidden">
+    
+    <div class="lg:col-span-4 flex flex-col space-y-4 overflow-y-auto pr-1">
+      
+      <div class="bg-white dark:bg-slate-950 p-5 rounded-xl border border-slate-200 dark:border-slate-900 shadow-sm space-y-4">
+        <div id="step1Header" class="flex items-center space-x-2 text-blue-600 dark:text-blue-400 font-bold text-sm uppercase tracking-wider transition-colors duration-300">
+          <span id="step1Badge" class="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-xs">1</span>
+          <span>Cross Country Settings</span>
+        </div>
+        
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 font-mono uppercase tracking-wider">Meet Name</label>
+            <input type="text" id="meetTitle" placeholder="e.g. OHSAA Regional Championships" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100 transition-colors">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 font-mono uppercase tracking-wider">Venue / City</label>
+              <input type="text" id="meetVenue" placeholder="e.g. Pickerington, OH" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100 transition-colors">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 font-mono uppercase tracking-wider">Meet Date</label>
+              <input type="text" id="meetDate" placeholder="Kit-Kat format or explicit" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100 transition-colors">
+            </div>
+          </div>
+          
+          <div id="xcRaceHeaderContainer">
+            <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 font-mono uppercase tracking-wider">XC Race/Division Header</label>
+            <input type="text" id="xcRaceHeader" placeholder="e.g. Division 1 Varsity Boys 5k" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100 transition-colors">
+          </div>
+
+          <div id="trackScoringRow" class="hidden">
+            <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 font-mono uppercase tracking-wider">Scoring System Depth</label>
+            <select id="trackScoringType" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100 transition-colors">
+              <option value="track_8_scoring">Standard 8-lane High School: (10-8-6-5-4-3-2-1)</option>
+              <option value="track_6_scoring">Standard 6-lane High School: (10-8-6-4-2-1)</option>
+              <option value="track_collegiate_scoring">NCAA / Collegiate scoring top 8: (10-8-6-5-4-3-2-1)</option>
+              <option value="track_non_scoring">Non-Scoring Meet / Open Invite Invitationals</option>
+            </select>
+          </div>
+
+          <div id="xcScoringRow">
+            <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 font-mono uppercase tracking-wider">XC Division Filter Layout</label>
+            <select id="xcScoringType" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100 transition-colors">
+              <option value="cross_country">Standard HS Invitational: (Top 5 count + 2 displace)</option>
+              <option value="xc_collegiate">Collegiate / Open Rules: (Top 5 count + 2 displace)</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="border-t border-slate-100 dark:border-slate-900/50 my-2 pt-3 space-y-2">
+          <label class="flex items-center text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer">
+            <input type="checkbox" id="flipNamesCheck" class="w-4 h-4 text-blue-600 rounded mr-2">
+            Flip Name Strings ("Last, First" &rarr; "First Last")
+          </label>
+          <label class="flex items-center text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer">
+            <input type="checkbox" id="girlsFirstCheck" checked class="w-4 h-4 text-blue-600 rounded mr-2">
+            Order Girls results block first before Boys
+          </label>
+          <label class="flex items-center text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer">
+            <input type="checkbox" id="showResultsLabelCheck" checked class="w-4 h-4 text-blue-600 rounded mr-2">
+            Include "Results" centered header
+          </label>
+          <label class="flex items-center text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer">
+            <input type="checkbox" id="includeGirlsCheck" checked class="w-4 h-4 text-blue-600 rounded mr-2">
+            <span id="includeGirlsLabel">Include Girls</span>
+          </label>
+          <label class="flex items-center text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer">
+            <input type="checkbox" id="includeBoysCheck" checked class="w-4 h-4 text-blue-600 rounded mr-2">
+            <span id="includeBoysLabel">Include Boys</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="bg-white dark:bg-slate-950 p-5 rounded-xl border border-slate-200 dark:border-slate-900 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <div id="step2Header" class="flex items-center space-x-2 text-blue-600 dark:text-blue-400 font-bold text-sm uppercase tracking-wider transition-colors duration-300">
+            <span id="step2Badge" class="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-xs">2</span>
+            <span>Paste Results or Drag &amp; Drop File</span>
+          </div>
+          <button id="clearBtn" class="text-xs text-rose-500 hover:text-rose-600 dark:text-rose-400 font-medium transition-colors hidden flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            Clear Data
+          </button>
+        </div>
+        
+        <div id="dropzone" class="relative group border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-400 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-colors duration-200 bg-slate-50/50 dark:bg-slate-900/20">
+          <input type="file" id="fileInput" class="absolute inset-0 opacity-0 cursor-pointer" accept=".txt,.html,.htm,.csv">
+          <svg class="w-8 h-8 text-slate-400 dark:text-slate-600 mb-2 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m-9 1V4a2 2 0 012-2h6l2 2h6a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2z" /></svg>
+          <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Drop raw file (.txt/.html) here</span>
+          <span class="text-[10px] text-slate-400 mt-1">Or click anywhere to upload from your storage device</span>
+          <div id="activeFileBadge" class="hidden mt-2 px-2.5 py-1 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900 rounded-lg flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-mono font-medium">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+            <span id="activeFileName" class="truncate max-w-[180px]">file.txt</span>
+          </div>
+        </div>
+
+        <div>
+          <textarea id="rawInput" placeholder="Alternatively, paste timing table strings, FinishTiming copies, raw HTML pages, or columnar layouts here directly..." class="w-full h-44 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs font-mono focus:outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100 placeholder-slate-400 transition-colors resize-none"></svg>
+        </div>
+        
+        <button id="processBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm shadow-md shadow-blue-500/10 flex items-center justify-center gap-2 transition transform active:scale-[0.99]">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.213 6H16" /></svg>
+          Generate Output Layouts
+        </button>
+      </div>
+
+      <div class="bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-900 p-4 space-y-2 flex-1 min-h-[140px] flex flex-col shadow-sm">
+        <div class="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-slate-400">
+          <span>Engine Detection Logging</span>
+          <span id="detectedFormatBadge" class="text-blue-500 font-semibold bg-blue-50 dark:bg-blue-950/30 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-900/50">Awaiting Data</span>
+        </div>
+        <div id="consoleLog" class="flex-1 bg-slate-950 rounded-lg p-2.5 font-mono text-[10px] text-slate-300 overflow-y-auto space-y-1 select-text">
+          <div class="text-slate-500">&gt;_ Ready for conversion operations. Provide code inputs.</div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <div class="lg:col-span-8 flex flex-col space-y-4 h-full overflow-hidden">
+      
+      <div class="bg-white dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-900 shadow-sm flex items-center justify-between">
+        <div class="flex gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+          <button id="paneTabHtml" class="px-4 py-1.5 rounded-md text-xs font-semibold shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white flex items-center gap-1.5 transition-all">
+            <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+            Flat Preformatted Text File
+          </button>
+          <button id="paneTabAp" class="px-4 py-1.5 rounded-md text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-1.5 transition-all">
+            <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z" /></svg>
+            AP Style Wire Report Layout
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <div id="apDepthRow" class="hidden flex items-center gap-1 bg-slate-50 dark:bg-slate-900 p-1 border border-slate-200 dark:border-slate-800 rounded-lg">
+            <span id="apDepthLabel" class="text-[10px] font-mono uppercase text-slate-400 px-1.5">Depth:</span>
+            <button data-apdepth="1" class="ap-depth-btn px-2 py-1 text-xs rounded font-medium transition-all bg-white dark:bg-slate-800 shadow-sm text-blue-500">1st Only</button>
+            <button data-apdepth="3" class="ap-depth-btn px-2 py-1 text-xs rounded font-medium transition-all text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">Top 3</button>
+            <button data-apdepth="5" class="ap-depth-btn px-2 py-1 text-xs rounded font-medium transition-all text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">Top 5</button>
+            <button data-apdepth="all" class="ap-depth-btn px-2 py-1 text-xs rounded font-medium transition-all text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">All</button>
+          </div>
+
+          <button id="copyBtn" class="bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white dark:text-slate-200 font-semibold py-1.5 px-3.5 rounded-lg text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+            Copy Workspace
+          </button>
+        </div>
+      </div>
+
+      <div class="flex-1 bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-900 shadow-inner relative overflow-hidden flex flex-col">
+        
+        <textarea id="outputHtml" readonly class="flex-1 w-full h-full bg-slate-950 font-mono text-xs p-5 focus:outline-none text-slate-200 selection:bg-blue-500/30 overflow-auto whitespace-pre resize-none select-text" placeholder="Generated flat-file data arrays will display here immediately following raw payload processing..."></textarea>
+        
+        <textarea id="outputAp" readonly class="hidden flex-1 w-full h-full bg-slate-950 font-mono text-xs p-5 focus:outline-none text-slate-200 selection:bg-indigo-500/30 overflow-auto whitespace-pre resize-none select-text" placeholder="AP Style Wire Summary text copy blocks appear inside this segment..."></textarea>
+
+        <div id="noDataOverlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-[1px] flex flex-col items-center justify-center text-center p-6 space-y-2 pointer-events-none transition-opacity duration-300">
+          <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center border border-slate-800 text-slate-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+          </div>
+          <h3 class="text-xs font-bold text-slate-400 uppercase font-mono tracking-widest">Workspace Output Idle</h3>
+          <p class="text-[11px] text-slate-600 max-w-xs leading-normal">Provide a text input stream, drop an athletic text export, or drag a results file into step 2 to process tables.</p>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <div id="toast" class="fixed bottom-4 right-4 bg-slate-900 text-white text-xs font-medium px-4 py-2.5 rounded-xl shadow-xl border border-slate-800 flex items-center gap-2 pointer-events-none opacity-0 transform translate-y-1 transition-all duration-300 z-50">
+    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+    <span id="toastMsg">Workspace output copied to clipboard!</span>
+  </div>
+
+  <script>
+    let lastFileText = "";
+    let activeTab = "html";
+    let currentParsedSections = null;
+    let populatingHeaders = true;
+
+    // UI Active Tab Controller
+    function setTab(tab) {
+      activeTab = tab;
+      const htmlBtn = document.getElementById('paneTabHtml');
+      const apBtn = document.getElementById('paneTabAp');
+      const htmlBox = document.getElementById('outputHtml');
+      const apBox = document.getElementById('outputAp');
+      const apDepth = document.getElementById('apDepthRow');
+
+      if (tab === 'html') {
+        htmlBtn.className = "px-4 py-1.5 rounded-md text-xs font-semibold shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white flex items-center gap-1.5 transition-all";
+        apBtn.className = "px-4 py-1.5 rounded-md text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-1.5 transition-all";
+        htmlBox.classList.remove('hidden');
+        apBox.classList.add('hidden');
+        apDepth.classList.add('hidden');
+      } else {
+        apBtn.className = "px-4 py-1.5 rounded-md text-xs font-semibold shadow-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white flex items-center gap-1.5 transition-all";
+        htmlBtn.className = "px-4 py-1.5 rounded-md text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-1.5 transition-all";
+        apBox.classList.remove('hidden');
+        htmlBox.classList.add('hidden');
+        apDepth.classList.remove('hidden');
+      }
+    }
+
+    document.getElementById('paneTabHtml').addEventListener('click', () => setTab('html'));
+    document.getElementById('paneTabAp').addEventListener('click', () => setTab('ap'));
+
+    // Wire Depth buttons switch logic
+    document.querySelectorAll('.ap-depth-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.ap-depth-btn').forEach(b => {
+          b.className = "ap-depth-btn px-2 py-1 text-xs rounded font-medium transition-all text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200";
+        });
+        e.target.className = "ap-depth-btn px-2 py-1 text-xs rounded font-medium transition-all bg-white dark:bg-slate-800 shadow-sm text-blue-500";
+        if (lastFileText) process();
+      });
+    });
+
+    // Mode Selector Controls Link
+    function updateUIVisuals(mode) {
+      const step1Header = document.getElementById('step1Header');
+      const step1Badge = document.getElementById('step1Badge');
+      const step2Header = document.getElementById('step2Header');
+      const step2Badge = document.getElementById('step2Badge');
+      const processBtn = document.getElementById('processBtn');
+      const xcRaceHeaderContainer = document.getElementById('xcRaceHeaderContainer');
+
+      const xcBtn = document.getElementById('modeXC');
+      const trackBtn = document.getElementById('modeTrack');
+
+      if (mode.startsWith('cross_country') || mode.startsWith('xc_')) {
+        xcBtn.className = "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm";
+        trackBtn.className = "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200";
+        
+        step1Header.innerText = "Cross Country Settings";
+        step1Header.className = "flex items-center space-x-2 text-blue-600 dark:text-blue-400 font-bold text-sm uppercase tracking-wider transition-colors duration-300";
+        step1Badge.className = "w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-xs";
+        step2Header.className = "flex items-center space-x-2 text-blue-600 dark:text-blue-400 font-bold text-sm uppercase tracking-wider transition-colors duration-300";
+        step2Badge.className = "w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-xs";
+        processBtn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm shadow-md shadow-blue-500/10 flex items-center justify-center gap-2 transition transform active:scale-[0.99]";
+        xcRaceHeaderContainer.classList.remove('hidden');
+        
+        document.getElementById('trackScoringRow').classList.add('hidden');
+        document.getElementById('xcScoringRow').classList.remove('hidden');
+        document.getElementById('apDepthLabel').textContent = "XC Team/Indiv:";
+      } else {
+        trackBtn.className = "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm";
+        xcBtn.className = "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200";
+
+        step1Header.innerText = "Track & Field Settings";
+        step1Header.className = "flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm uppercase tracking-wider transition-colors duration-300";
+        step1Badge.className = "w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-xs";
+        step2Header.className = "flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm uppercase tracking-wider transition-colors duration-300";
+        step2Badge.className = "w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-xs";
+        processBtn.className = "w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm shadow-md shadow-indigo-500/10 flex items-center justify-center gap-2 transition transform active:scale-[0.99]";
+        xcRaceHeaderContainer.classList.add('hidden');
+        
+        document.getElementById('xcScoringRow').classList.add('hidden');
+        document.getElementById('trackScoringRow').classList.remove('hidden');
+        document.getElementById('apDepthLabel').textContent = "Depth:";
+      }
+    }
+
+    document.getElementById('modeXC').addEventListener('click', () => {
+      document.getElementById('meetType').value = 'cross_country';
+      updateUIVisuals('cross_country');
+      if (lastFileText) process();
+    });
+
+    document.getElementById('modeTrack').addEventListener('click', () => {
+      document.getElementById('meetType').value = 'track_8_scoring';
+      updateUIVisuals('track_8_scoring');
+      if (lastFileText) process();
+    });
+
+    // Logger Terminal Module
+    function log(msg) {
+      const consoleLog = document.getElementById('consoleLog');
+      const row = document.createElement('div');
+      row.className = "leading-relaxed text-slate-300";
+      row.innerHTML = `<span class="text-slate-600 font-semibold select-none">&gt;</span> ${msg}`;
+      consoleLog.appendChild(row);
+      while (consoleLog.children.length > 50) consoleLog.removeChild(consoleLog.firstChild);
+      consoleLog.scrollTop = consoleLog.scrollHeight;
+    }
+
+    function setSourceBadge(label) {
+      document.getElementById('detectedFormatBadge').textContent = label;
+    }
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.style.opacity = '1';
+      t.style.transform = 'translateY(0)';
+      setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transform = 'translateY(4px)';
+      }, 2500);
+    }
+
+    // String padding utility methods
+    function pad(s, len, align='left') {
+      s = String(s||'').trim();
+      if (s.length > len) s = s.substring(0, len);
+      if (align === 'right') return s.padStart(len);
+      return s.padEnd(len);
+    }
+
+    // Name processing tools
+    function flipName(nameStr) {
+      if (!document.getElementById('flipNamesCheck').checked) return nameStr;
+      if (!nameStr || !nameStr.includes(',')) return nameStr;
+      const index = nameStr.indexOf(',');
+      const last = nameStr.substring(0, index).trim();
+      const first = nameStr.substring(index + 1).trim();
+      return `${first} ${last}`.trim();
+    }
+
+    // School cleanup mapping filters
+    function cleanSchoolName(name) {
+      let s = String(name || '').trim();
+      s = s.replace(/^[•\s\d\-]+/, ''); // remove lead dots/numbers
+      // standard HS suffix compressions
+      s = s.replace(/\bHigh School\b/gi, 'HS');
+      s = s.replace(/\bJunior High\b/gi, 'JH');
+      s = s.replace(/\bMiddle School\b/gi, 'MS');
+      return s.trim();
+    }
+
+    // Time calculations
+    function parseTimeToSeconds(tStr) {
+      tStr = String(tStr||'').trim().toUpperCase();
+      if (!tStr || /^(DQ|DNS|DNF|FS|SCR|NT|NM|NH|FOUL)$/.test(tStr)) return Infinity;
+      tStr = tStr.replace(/[^\d:.]/g, '');
+      if (!tStr) return Infinity;
+      if (tStr.includes(':')) {
+        const parts = tStr.split(':');
+        let secs = 0;
+        if (parts.length === 3) {
+          secs += parseFloat(parts[0]) * 3600;
+          secs += parseFloat(parts[1]) * 60;
+          secs += parseFloat(parts[2]);
+        } else {
+          secs += parseFloat(parts[0]) * 60;
+          secs += parseFloat(parts[1]);
+        }
+        return secs;
+      }
+      return parseFloat(tStr);
+    }
+
+    function formatSecondsToTime(sec) {
+      if (sec === Infinity || isNaN(sec)) return "";
+      if (sec < 60) {
+        return sec.toFixed(2);
+      }
+      const mins = Math.floor(sec / 60);
+      const rem = (sec % 60).toFixed(2);
+      return `${mins}:${rem.padStart(5, '0')}`;
+    }
+
+    function isScoreable(evtHeader, forceNonScoring=false) {
+      if (forceNonScoring) return false;
+      const mType = document.getElementById('meetType').value;
+      if (mType === 'track_non_scoring') return false;
+      const h = String(evtHeader || '').toLowerCase();
+      if (h.includes('exhibition') || h.includes('unscored') || h.includes('open')) return false;
+      return true;
+    }
+
+    function isWheelchairEvent(evtHeader) {
+      const h = String(evtHeader || '').toLowerCase();
+      return h.includes('wheelchair') || h.includes('seated');
+    }
+
+    function cleanEventTitle(gender, header, forceCollegiate=false) {
+      let h = String(header || '').trim();
+      h = h.replace(/^(Event\s+\d+\s+)/i, '');
+      const gLabel = (gender === 'girls') ? "Girls" : "Boys";
+      
+      // Keep standard high school headers clean
+      if (!h.toLowerCase().includes('girls') && !h.toLowerCase().includes('boys') && !h.toLowerCase().includes('men') && !h.toLowerCase().includes('women')) {
+        h = `${gLabel} ${h}`;
+      }
+      return h;
+    }
+
+    // Points arrays mappings
+    function getPointsArray(isWC=false) {
+      const mType = document.getElementById('meetType').value;
+      if (isWC) return [10, 8, 6, 5, 4, 3, 2, 1];
+      if (mType === 'track_6_scoring') return [10, 8, 6, 4, 2, 1];
+      // default top 8 scoring matrix array
+      return [10, 8, 6, 5, 4, 3, 2, 1];
+    }
+
+    function calculateTiedPoints(entries, isRelay=false, isWC=false, scoreable=true) {
+      const map = new Map();
+      if (!scoreable) return map;
+      
+      const ptsArr = getPointsArray(isWC);
+      const maxPts = ptsArr.length;
+      
+      // cluster entries by explicit integer places
+      const clusters = {};
+      entries.forEach(e => {
+        const pNum = parseInt(e.place);
+        if (!isNaN(pNum) && pNum > 0) {
+          if (!clusters[pNum]) clusters[pNum] = [];
+          clusters[pNum].push(e);
+        }
+      });
+
+      Object.keys(clusters).forEach(pStr => {
+        const place = parseInt(pStr);
+        const list = clusters[place];
+        const count = list.length;
+        
+        let sum = 0;
+        for (let i = 0; i < count; i++) {
+          const slotIndex = (place - 1) + i;
+          if (slotIndex < maxPts) {
+            sum += ptsArr[slotIndex];
+          }
+        }
+        const sharedPts = sum / count;
+        list.forEach(e => {
+          if (sharedPts > 0) map.set(e, sharedPts);
+        });
+      });
+      return map;
+    }
+
+    function sortEntries(entries) {
+      return [...entries].sort((a,b) => {
+        const sA = parseTimeToSeconds(a.result);
+        const sB = parseTimeToSeconds(b.result);
+        if (sA !== sB) return sA - sB;
+        const pA = parseInt(a.place) || 999;
+        const pB = parseInt(b.place) || 999;
+        return pA - pB;
+      });
+    }
+
+    // Cross Country Scoring Tabulator Engine Model
+    function calculateXcTeamScores(entries, collegiateMode = false) {
+      const ptsMap = new Map();
+      const teamDetails = {};
+
+      // Filter entries with numeric places and times
+      const validEntries = entries.filter(e => {
+        const p = parseInt(e.place);
+        const sec = parseTimeToSeconds(e.result);
+        return !isNaN(p) && sec !== Infinity;
+      }).sort((a, b) => parseTimeToSeconds(a.result) - parseTimeToSeconds(b.result));
+
+      // Build listing of finishers per school name key string
+      validEntries.forEach(e => {
+        const sName = e.school;
+        if (!teamDetails[sName]) {
+          teamDetails[sName] = { entries: [], times: [], score: 0, count: 0, displacersCount: 0 };
+        }
+        teamDetails[sName].entries.push(e);
+        teamDetails[sName].times.push(parseTimeToSeconds(e.result));
+      });
+
+      // assign sequential scoring values sequentially among valid scoreable team runners
+      let currentScoringValue = 1;
+      validEntries.forEach(e => {
+        const sName = e.school;
+        const count = teamDetails[sName].count;
+        const displacers = teamDetails[sName].displacersCount;
+
+        // Skip assignment if a team has already filled its top 7 positions
+        if (count < 5) {
+          ptsMap.set(e, currentScoringValue);
+          teamDetails[sName].score += currentScoringValue;
+          teamDetails[sName].count++;
+          currentScoringValue++;
+        } else if (displacers < 2) {
+          ptsMap.set(e, currentScoringValue);
+          teamDetails[sName].displacersCount++;
+          if (teamDetails[sName].displacersCount === 1) {
+            teamDetails[sName].sixthScore = currentScoringValue;
+          } else if (teamDetails[sName].displacersCount === 2) {
+            teamDetails[sName].seventhScore = currentScoringValue;
+          }
+          currentScoringValue++;
+        } else {
+          // Exclude additional runners past top 7 from scoring or displacement impacts
+          ptsMap.set(e, null);
+        }
+      });
+
+      const teamStandings = [];
+      const incompleteSchools = [];
+
+      Object.keys(teamDetails).forEach(sName => {
+        const det = teamDetails[sName];
+        if (det.count === 5) {
+          teamStandings.push({
+            school: sName,
+            score: det.score,
+            sixthScore: det.sixthScore || Infinity,
+            seventhScore: det.seventhScore || Infinity
+          });
+        } else {
+          incompleteSchools.push({ school: sName, count: det.count });
+        }
+      });
+
+      // standard dual/invite tie-breaker logic evaluation block checks
+      teamStandings.sort((a, b) => {
+        if (a.score !== b.score) return a.score - b.score;
+        if (collegiateMode) {
+          // Head-to-head tie breaking evaluation routines for college meets
+          let winsA = 0; let winsB = 0;
+          const detA = teamDetails[a.school];
+          const detB = teamDetails[b.school];
+          if (detA && detB) {
+            const timesA = [...detA.times].sort((x,y) => x-y);
+            const timesB = [...detB.times].sort((x,y) => x-y);
+            for (let i = 0; i < 5; i++) {
+              const tA = timesA[i] || Infinity;
+              const tB = timesB[i] || Infinity;
+              if (tA < tB) winsA++;
+              else if (tB < tA) winsB++;
+            }
+            if (winsA !== winsB) {
+              return winsB - winsA;
+            }
+          }
+        }
+        return a.sixthScore - b.sixthScore;
+      });
+
+      return { ptsMap, teamStandings, incompleteSchools, teamDetails };
+    }
+
+    function cleanHtmlToText(text) {
+      const trimmed = text.trim();
+      if (trimmed.startsWith('<') || trimmed.toLowerCase().includes('<html') || trimmed.toLowerCase().includes('</div>') || trimmed.toLowerCase().includes('</pre>')) {
+        log("Raw HTML tags detected. Extracting text content...");
+        try {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(text, 'text/html');
+          const pre = doc.querySelector('pre');
+          if (pre) return pre.textContent;
+          return doc.body ? doc.body.textContent : doc.documentElement.textContent;
+        } catch (err) {
+          return text.replace(/<\/?[^>]+(>|$)/g, "");
+        }
+      }
+      return text;
+    }
+
+    function estimateColumns(headerLine) {
+      const keywords = [
+        { key: 'place', regex: /\b(place|plc|rank|pl)\b/i, defaultIdx: 0 },
+        { key: 'name', regex: /\b(name|athlete)\b/i },
+        { key: 'year', regex: /\b(yr|year|grade|class|gr)\b/i },
+        { key: 'school', regex: /\b(school|team|team\s+name)\b/i },
+        { key: 'time', regex: /\b(actual|time|finals|mark|perf)\b/i }
+      ];
+      const positions = [];
+      keywords.forEach(kw => {
+        const match = headerLine.match(kw.regex);
+        if (match) {
+          positions.push({ key: kw.key, start: match.index, end: match.index + match[0].length });
+        } else if (kw.defaultIdx !== undefined) {
+          positions.push({ key: kw.key, start: kw.defaultIdx, end: kw.defaultIdx + 3 });
+        }
+      });
+      positions.sort((a, b) => a.start - b.start);
+      const ranges = {};
+      for (let idx = 0; idx < positions.length; idx++) {
+        const current = positions[idx];
+        const textNext = positions[idx + 1];
+        ranges[current.key] = { start: current.start, end: textNext ? textNext.start : headerLine.length + 150 };
+      }
+      return ranges;
+    }
+
+    // Main Structural Parsing Framework Entrypoint
+    function parseAthMeet(raw) {
+      if (populatingHeaders && (raw.toLowerCase().includes("<center>") || raw.toLowerCase().includes("<h1>"))) {
+        try {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(raw, "text/html");
+          const h1Text = doc.querySelector("h1")?.textContent?.trim();
+          const h2Els = [...doc.querySelectorAll("h2")].map(el => el.textContent.trim()).filter(Boolean);
+          const h3Text = doc.querySelector("h3")?.textContent?.trim();
+          if (h1Text) document.getElementById('meetTitle').value = h1Text;
+          
+          const _datePattern = /([A-Za-z]+\.?\s+\d{1,2},\s*\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4})/;
+          for (const h2Text of h2Els) {
+            const dateMatch = h2Text.match(_datePattern);
+            if (dateMatch && !document.getElementById('meetDate').value) {
+              document.getElementById('meetDate').value = dateMatch[1];
+              const leftover = h2Text.replace(dateMatch[1], '').replace(/^[,\s-]+|[,\s-]+$/g, '').trim();
+              if (leftover && !document.getElementById('meetVenue').value) {
+                document.getElementById('meetVenue').value = leftover;
+              }
+            } else if (!dateMatch && !document.getElementById('meetVenue').value) {
+              document.getElementById('meetVenue').value = h2Text;
+            }
+          }
+          if (h3Text) {
+            document.getElementById('xcRaceHeader').value = h3Text;
+          }
+          log("Successfully pre-populated meet headers from HTML!");
+        } catch (e) {
+          log("Attempt to pre-populate meet metadata skipped.");
+        }
+      }
+
+      let cleanRaw = cleanHtmlToText(raw);
+      cleanRaw = cleanRaw.replace(/\r/g,'').replace(/\u00A0/g,' ');
+      cleanRaw = cleanRaw.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+      
+      const lines = cleanRaw.split('\n').map(l => l.trim()).filter(l => l !== '');
+      const sections = { girls: [], boys: [] };
+
+      // --- NEW DETECTOR BLOCK: SEMICOLON-DELIMITED FLAT EXPORTS (Athletic.net standard) ---
+      const hasSemicolons = lines.slice(0, 10).some(line => line.split(';').length >= 6);
+      if (hasSemicolons) {
+        log("Semicolon-delimited Text Layout Engine Matched!");
+        setSourceBadge("Semicolon CSV File");
+
+        let detectedRaceHeader = "Varsity Race";
+        const entriesMap = { girls: [], boys: [] };
+
+        lines.forEach(line => {
+          const parts = line.split(';').map(p => p.trim());
+          if (parts.length < 6) return;
+          
+          // Skip header row strings if present
+          if (parts[0].toLowerCase().includes('event') || parts[2].toLowerCase().includes('place')) {
+            return;
+          }
+
+          // Fields mapping: Event;Gender;Place;Athlete/Relay;Grade;School;Result;Points
+          const eventName = parts[0] || "Cross Country Race";
+          const genderRaw = parts[1] || "boys";
+          const place = parts[2] || "";
+          const name = parts[3] || "";
+          const grade = parts[4] || "";
+          const school = parts[5] || "";
+          const result = parts[6] || "";
+
+          detectedRaceHeader = eventName;
+          
+          let genderKey = 'boys';
+          if (genderRaw.toLowerCase().includes('girl') || genderRaw.toLowerCase().includes('female') || genderRaw.toLowerCase().includes('womens') || genderRaw.toLowerCase().includes('women')) {
+            genderKey = 'girls';
+          }
+
+          if (name && place) {
+            entriesMap[genderKey].push({
+              place: place,
+              year: grade,
+              name: name,
+              school: cleanSchoolName(school),
+              result: result
+            });
+          }
+        });
+
+        const finalHeader = document.getElementById('xcRaceHeader').value.trim() || detectedRaceHeader;
+        ['girls', 'boys'].forEach(genderKey => {
+          if (entriesMap[genderKey].length > 0) {
+            sections[genderKey].push({
+              header: finalHeader,
+              kind: 'running',
+              entries: entriesMap[genderKey],
+              gender: genderKey
+            });
+          }
+        });
+
+        return sections;
+      }
+      // --- END SEMICOLON-DELIMITED PARSER ---
+
+      // DETECT GOPHER RUNNING / LEGENDS XC FORMATS
+      const isGopher = cleanRaw.toLowerCase().includes("gopher running") || (cleanRaw.includes("PLACE SCORE") && cleanRaw.includes("FINISHER")) || cleanRaw.includes("POINTS AT SPLIT");
+      if (isGopher) {
+        log("Gopher / Legends XC structured format matched!");
+        setSourceBadge("Gopher Running");
+        const entries = [];
+        let gender = 'boys';
+        const rawLower = cleanRaw.toLowerCase();
+        if (rawLower.includes('girl') || rawLower.includes('women') || rawLower.includes('womens')) {
+          gender = 'girls';
+        }
+        let inIndividualBlock = false;
+        
+        for (let i = 0; i < lines.length; i++) {
+          const l = lines[i];
+          if (l.toUpperCase().includes("PLACE SCORE") && l.toUpperCase().includes("FINISHER")) {
+            inIndividualBlock = true;
+            continue;
+          }
+          if (inIndividualBlock && (l.toUpperCase().includes("TEAM SCORE") || l.startsWith("----") || l.length < 5)) {
+            if (entries.length > 0 && l.toUpperCase().includes("TEAM SCORE")) inIndividualBlock = false;
+            continue;
+          }
+          if (inIndividualBlock) {
+            const tokens = l.split(/\s{2,}/).map(t => t.trim()).filter(Boolean);
+            if (tokens.length >= 4) {
+              const pl = tokens[0];
+              const nameAndYr = tokens[2];
+              const school = tokens[3];
+              const time = tokens[tokens.length - 1];
+              
+              let yr = "";
+              let cName = nameAndYr;
+              const yrM = nameAndYr.match(/\s+(\d{1,2})$/);
+              if (yrM) {
+                yr = yrM[1];
+                cName = nameAndYr.substring(0, yrM.index).trim();
+              }
+              entries.push({ place: pl, year: yr, name: cName, school: cleanSchoolName(school), result: time });
+            }
+          }
+        }
+        const finalHeader = document.getElementById('xcRaceHeader').value.trim() || "Varsity Race";
+        sections[gender].push({ header: finalHeader, kind: 'running', entries: entries, gender: gender });
+        return sections;
+      }
+
+      // DETECT FINISHTIMING LAYOUTS
+      const isFinishTiming = lines.some(line => /^\s*\d+\s+.+?\s+(JR|SR|SO|FR|\d{1,2})\s+.+?\s+\d{1,2}:\d{2}/i.test(line));
+      if (isFinishTiming) {
+        log("FinishTiming Multi-Column format matched!");
+        setSourceBadge("FinishTiming");
+        let gender = 'boys';
+        const headerVal = document.getElementById('xcRaceHeader').value.toLowerCase();
+        if (headerVal.includes('girl') || headerVal.includes('women')) gender = 'girls';
+        const rawLower = cleanRaw.toLowerCase();
+        if (rawLower.includes('girl') || rawLower.includes('women') || rawLower.includes('womens')) {
+          gender = 'girls';
+        }
+        
+        let detectedRaceHeader = "XC Race";
+        const entries = [];
+        
+        lines.forEach(line => {
+          const match = line.match(/^\s*(\d+)\s+(.+?)\s+\b(JR|SR|SO|FR|\d{1,2})\b\s+(.+?)\s+(\d{1,2}:\d{2}\.\d{2})/i);
+          if (match) {
+            entries.push({
+              place: match[1],
+              year: match[3],
+              name: match[2].trim(),
+              school: cleanSchoolName(match[4]),
+              result: match[5]
+            });
+          }
+        });
+        const finalHeader = document.getElementById('xcRaceHeader').value.trim() || detectedRaceHeader;
+        sections[gender].push({ header: finalHeader, kind: 'running', entries: entries, gender: gender });
+        return sections;
+      }
+
+      // Standard high school XC line parser
+      const isXcType = document.getElementById('meetType').value === 'cross_country';
+      const isSingleLineXC = lines.some(line => /^\s*\d+\.?\s+(\d{1,2})?\s+.+?\s+\d{1,2}:\d{2}/.test(line));
+      if ((isSingleLineXC || isXcType) && !cleanRaw.includes('Yr:') && !cleanRaw.includes('•') && !cleanRaw.includes('PLACE VIDEO')) {
+        log("Standard Cross Country parser activated!");
+        setSourceBadge("XC Standard Text");
+        let currentGender = 'boys';
+        const headerVal = document.getElementById('xcRaceHeader').value.toLowerCase();
+        if (headerVal.includes('girl') || headerVal.includes('women')) currentGender = 'girls';
+        const rawLower = cleanRaw.toLowerCase();
+        if (rawLower.includes('girl') || rawLower.includes('women') || rawLower.includes('womens')) {
+          currentGender = 'girls';
+        }
+        let currentEvent = null;
+
+        function flushEvent() {
+          if (currentEvent && currentGender) sections[currentGender].push(currentEvent);
+          currentEvent = null;
+        }
+
+        lines.forEach(line => {
+          const lLower = line.toLowerCase().trim();
+          if (lLower.startsWith('womens') || lLower.startsWith("women's") || lLower.includes('girls varsity') || lLower.includes('varsity girls')) {
+            flushEvent();
+            currentGender = 'girls';
+            return;
+          }
+          if (lLower.startsWith('mens') || lLower.startsWith("men's") || lLower.includes('boys varsity') || lLower.includes('varsity boys')) {
+            flushEvent();
+            currentGender = 'boys';
+            return;
+          }
+          
+          const rowMatch = line.match(/^\s*(\d+)\.?\s+(.*)/);
+          if (rowMatch) {
+            const place = rowMatch[1];
+            const remaining = rowMatch[2].trim();
+            const timeMatch = remaining.match(/\b(\d{1,2}:\d{2}(\.\d{1,3})?)\b/);
+            if (timeMatch) {
+              if (!currentEvent) {
+                const headVal = document.getElementById('xcRaceHeader').value.trim() || "Varsity Race";
+                currentEvent = { header: headVal, kind: 'running', entries: [], gender: currentGender };
+              }
+              const result = timeMatch[1];
+              const timeIndex = timeMatch.index;
+              const beforeTime = remaining.substring(0, timeIndex).trim();
+              
+              const gradeMatch = beforeTime.match(/\b(0?[9]|1[0-2])\b/);
+              let name = beforeTime;
+              let grade = "";
+              let school = "Unattached";
+              if (gradeMatch) {
+                grade = gradeMatch[1].replace(/^0/, '');
+                const gradeIndex = gradeMatch.index;
+                name = beforeTime.substring(0, gradeIndex).trim();
+                school = beforeTime.substring(gradeIndex + gradeMatch[0].length).trim();
+              }
+              if (name) {
+                currentEvent.entries.push({
+                  place: place,
+                  year: grade,
+                  name: name,
+                  school: cleanSchoolName(school),
+                  result: result
+                });
+              }
+            }
+          }
+        });
+        flushEvent();
+        return sections;
+      }
+
+      // TRACK MODE MULTI-EVENT FALLBACK ENGINE
+      log("Multi-Event Track layout matrix mapping loaded...");
+      setSourceBadge("Track Multi-Event Text");
+      let activeGender = 'boys';
+      let currentEventObj = null;
+
+      lines.forEach(line => {
+        const lLower = line.toLowerCase();
+        if (lLower.includes("women's") || lLower.includes("girls")) {
+          activeGender = 'girls';
+        } else if (lLower.includes("men's") || lLower.includes("boys")) {
+          activeGender = 'boys';
+        }
+
+        const isHeaderRow = line.toUpperCase().includes('PLACE') && (line.toUpperCase().includes('ATHLETE') || line.toUpperCase().includes('NAME') || line.toUpperCase().includes('TEAM'));
+        
+        if ((lLower.includes('dash') || lLower.includes('run') || lLower.includes('hurdles') || lLower.includes('relay') || lLower.includes('jump') || lLower.includes('throw') || lLower.includes('shot') || lLower.includes('discus') || lLower.includes('pole')) && !isHeaderRow) {
+          if (currentEventObj) {
+            sections[currentEventObj.gender].push(currentEventObj);
+          }
+          currentEventObj = {
+            header: line,
+            kind: (lLower.includes('relay')) ? 'relay' : 'running',
+            entries: [],
+            gender: activeGender
+          };
+          return;
+        }
+
+        if (currentEventObj) {
+          const rowMatch = line.match(/^\s*(\d+)\s+(.*)/);
+          if (rowMatch) {
+            const pl = rowMatch[1];
+            const content = rowMatch[2].trim();
+            const tokens = content.split(/\s{2,}/).map(t => t.trim()).filter(Boolean);
+            
+            if (tokens.length >= 2) {
+              let athlete = tokens[0];
+              let school = tokens[1];
+              let result = tokens[tokens.length - 1];
+              let yr = "";
+
+              if (tokens.length >= 3) {
+                if (tokens[1].length <= 2 || !isNaN(tokens[1])) {
+                  yr = tokens[1];
+                  school = tokens[2];
+                }
+              }
+
+              currentEventObj.entries.push({
+                place: pl,
+                year: yr,
+                name: athlete,
+                school: cleanSchoolName(school),
+                result: result
+              });
+            }
+          }
+        }
+      });
+
+      if (currentEventObj) {
+        sections[currentEventObj.gender].push(currentEventObj);
+      }
+
+      return sections;
+    }
+
+    // Builder Modules for HTML / Flat text preformatted blocks
+    function buildRunningEvent(gender, evtHeader, entries, forceNonScoring=false, forceCollegiate=false) {
+      const W = 87;
+      const sep = '='.repeat(W);
+      const fullEvtName = cleanEventTitle(gender, evtHeader, forceCollegiate);
+      const scoreable = isScoreable(evtHeader, forceNonScoring);
+
+      let out = `\n${fullEvtName}\n${sep}\n`;
+      out += pad("Place", 5, 'right') + " " + pad("Athlete", 24, 'left') + " " + pad("Yr", 3, 'left') + " " + pad("School", 33, 'left') + pad(scoreable ? "Finals" : "Result", 9, 'right') + pad("Pts", 11, 'right') + "\n";
+      out += `${sep}\n`;
+
+      const pointsMap = calculateTiedPoints(entries, false, false, scoreable);
+
+      entries.forEach(e => {
+        const pts = pointsMap.get(e);
+        const ptsStr = (pts !== undefined && pts > 0) ? Number(pts.toFixed(2)).toString().replace(/\.00$/, '') : '';
+        
+        const placeF = pad(e.place || '--', 5, 'right');
+        const nameF = pad(flipName(e.name || ''), 24, 'left');
+        const yrF = pad(e.year || '', 3, 'left');
+        const schoolF = pad(cleanSchoolName(e.school || ''), 33, 'left');
+        const resultF = pad(e.result || '', 9, 'right');
+        const ptsF = pad(ptsStr, 11, 'right');
+
+        out += `${placeF} ${nameF} ${yrF} ${schoolF}${resultF}${ptsF}\n`;
+      });
+
+      return out;
+    }
+
+    function buildRelayEvent(gender, evtHeader, entries, forceNonScoring=false, forceCollegiate=false) {
+      const W = 87;
+      const sep = '='.repeat(W);
+      const fullEvtName = cleanEventTitle(gender, evtHeader, forceCollegiate);
+      const scoreable = isScoreable(evtHeader, forceNonScoring);
+
+      let out = `\n${fullEvtName}\n${sep}\n`;
+      out += pad("Place", 5, 'right') + " " + pad("School / Relay Members", 61, 'left') + pad(scoreable ? "Finals" : "Result", 9, 'right') + pad("Pts", 10, 'right') + "\n";
+      out += `${sep}\n`;
+
+      const pointsMap = calculateTiedPoints(entries, true, false, scoreable);
+
+      entries.forEach(e => {
+        const pts = pointsMap.get(e);
+        const ptsStr = (pts !== undefined && pts > 0) ? Number(pts.toFixed(2)).toString().replace(/\.00$/, '') : '';
+        
+        const placeF = pad(e.place || '--', 5, 'right');
+        const schoolF = pad(cleanSchoolName(e.school || ''), 61, 'left');
+        const resultF = pad(e.result || '', 9, 'right');
+        const ptsF = pad(ptsStr, 10, 'right');
+
+        out += `${placeF} ${schoolF}${resultF}${ptsF}\n`;
+      });
+
+      return out;
+    }
+
+    function buildXcOutputText(sections, mode) {
+      let out = "";
+      const isCollegiate = (mode === 'xc_collegiate');
+      
+      const meetTitle = document.getElementById('meetTitle').value.trim();
+      const meetVenue = document.getElementById('meetVenue').value.trim();
+      const meetDate = document.getElementById('meetDate').value.trim();
+
+      if (meetTitle) out += `${meetTitle}\n`;
+      if (meetVenue || meetDate) {
+        out += [meetVenue, meetDate].filter(Boolean).join(" - ") + "\n";
+      }
+      if (meetTitle || meetVenue || meetDate) out += "\n";
+
+      if (document.getElementById('showResultsLabelCheck').checked) {
+        out += " ".repeat(38) + "Results\n";
+      }
+
+      const gendersOrder = document.getElementById('girlsFirstCheck').checked ? ['girls', 'boys'] : ['boys', 'girls'];
+      
+      gendersOrder.forEach(gender => {
+        if (gender === 'girls' && !document.getElementById('includeGirlsCheck').checked) return;
+        if (gender === 'boys' && !document.getElementById('includeBoysCheck').checked) return;
+
+        const list = sections[gender] || [];
+        list.forEach(evt => {
+          // Individual Flat Board Preformatted Text
+          out += buildRunningEvent(gender, evt.header, evt.entries, false, isCollegiate);
+
+          // Team Scoring calculation display layout blocks
+          const scoresObj = calculateXcTeamScores(evt.entries, isCollegiate);
+          if (scoresObj.teamStandings.length > 0 || scoresObj.incompleteSchools.length > 0) {
+            const sep = '='.repeat(87);
+            const gLabel = (gender === 'girls') ? "Girls" : "Boys";
+            out += `\n${gLabel} Team Scores\n${sep}\n`;
+            out += pad("Place", 5, 'right') + " " + pad("Team Name", 40, 'left') + " " + pad("Total Points", 12, 'right') + "\n";
+            out += `${sep}\n`;
+
+            scoresObj.teamStandings.forEach((team, idx) => {
+              out += pad(idx + 1, 5, 'right') + " " + pad(team.school, 40, 'left') + " " + pad(team.score, 12, 'right') + "\n";
+            });
+
+            if (scoresObj.incompleteSchools.length > 0) {
+              out += `\nIncomplete Teams:\n`;
+              scoresObj.incompleteSchools.forEach(team => {
+                out += ` * ${team.school} (${team.count} finishers)\n`;
+              });
+            }
+          }
+        });
+      });
+
+      return out.trim();
+    }
+
+    // AP Wire Output Formatter
+    function apFormatName(nameStr) {
+      if (!nameStr) return "";
+      if (nameStr.includes(',')) {
+        const parts = nameStr.split(',').map(p => p.trim());
+        return `${parts[1]} ${parts[0]}`;
+      }
+      return nameStr;
+    }
+
+    function buildApStyleOutput(sections) {
+      const meetTitle = document.getElementById('meetTitle').value.trim().toUpperCase() || "XC INVITATIONAL";
+      const meetVenue = document.getElementById('meetVenue').value.trim() || "";
+      const meetDate = document.getElementById('meetDate').value.trim() || "";
+      
+      let out = "";
+      if (meetVenue) {
+        out += `${meetVenue.toUpperCase()} — `;
+      }
+
+      const activeDepthBtn = document.querySelector('.ap-depth-btn.text-blue-500');
+      const depthVal = activeDepthBtn ? activeDepthBtn.dataset.apdepth : "1";
+      const limit = depthVal === 'all' ? Infinity : parseInt(depthVal);
+
+      const gendersOrder = document.getElementById('girlsFirstCheck').checked ? ['girls', 'boys'] : ['boys', 'girls'];
+      const segments = [];
+
+      gendersOrder.forEach(gender => {
+        if (gender === 'girls' && !document.getElementById('includeGirlsCheck').checked) return;
+        if (gender === 'boys' && !document.getElementById('includeBoysCheck').checked) return;
+
+        const list = sections[gender] || [];
+        list.forEach(evt => {
+          const gLabel = (gender === 'girls') ? "Women" : "Men";
+          
+          // Team Segment Line Text string compilation
+          const scoresObj = calculateXcTeamScores(evt.entries, false);
+          if (scoresObj.teamStandings.length > 0) {
+            const teamStrings = scoresObj.teamStandings.map((t, i) => `${i+1}. ${t.school}, ${t.score}`);
+            segments.push(`${gLabel} Team Standings: ${teamStrings.join('; ')}.`);
+          }
+
+          // Individual Leader results line compilation
+          if (evt.entries.length > 0) {
+            const sorted = sortEntries(evt.entries);
+            const sub = sorted.slice(0, limit);
+            const indStrings = sub.map((e, i) => `${i+1}. ${apFormatName(e.name)} (${e.school}) ${e.result}`);
+            segments.push(`${gLabel} Individual Leaders: ${indStrings.join('; ')}.`);
+          }
+        });
+      });
+
+      out += segments.join(" ");
+      return out.trim();
+    }
+
+    // Global application execution flow loop logic pipeline
+    function process() {
+      const text = document.getElementById('rawInput').value;
+      if (!text.trim()) {
+        document.getElementById('noDataOverlay').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('noDataOverlay').classList.add('hidden');
+      document.getElementById('clearBtn').classList.remove('hidden');
+
+      const mode = document.getElementById('meetType').value;
+      
+      try {
+        const sections = parseAthMeet(text);
+        currentParsedSections = sections;
+
+        // Build flat text view layout output
+        const htmlText = buildXcOutputText(sections, mode);
+        document.getElementById('outputHtml').value = htmlText;
+
+        // Build AP Wire text layout view components
+        const apText = buildApStyleOutput(sections);
+        document.getElementById('outputAp').value = apText;
+
+        populatingHeaders = false;
+      } catch (err) {
+        log(`Parsing error exception: ${err.message}`);
+        console.error(err);
+      }
+    }
+
+    document.getElementById('processBtn').addEventListener('click', () => {
+      populatingHeaders = true;
+      process();
+    });
+
+    // Clear Data module button bindings
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      document.getElementById('rawInput').value = "";
+      document.getElementById('outputHtml').value = "";
+      document.getElementById('outputAp').value = "";
+      document.getElementById('activeFileBadge').classList.add('hidden');
+      document.getElementById('clearBtn').classList.add('hidden');
+      document.getElementById('noDataOverlay').classList.remove('hidden');
+      document.getElementById('detectedFormatBadge').textContent = "Awaiting Data";
+      lastFileText = "";
+      currentParsedSections = null;
+      populatingHeaders = true;
+      log("Workspace context vectors reset cleanly.");
+    });
+
+    // Clipboard copy controls links configuration
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const targetBox = (activeTab === 'html') ? document.getElementById('outputHtml') : document.getElementById('outputAp');
+      if (!targetBox.value.trim()) {
+        toast("Nothing generated to copy yet!");
+        return;
+      }
+      navigator.clipboard.writeText(targetBox.value);
+      toast(`${activeTab === 'html' ? 'Flat-text table' : 'AP wire block'} copied to clipboard!`);
+    });
+
+    // Drag and Drop implementation link logic bounds configuration
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('border-blue-500', 'bg-blue-50/10');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('border-blue-500', 'bg-blue-50/10');
+    });
+
+    function handleFile(file) {
+      if (!file) return;
+      document.getElementById('activeFileName').textContent = file.name;
+      document.getElementById('activeFileBadge').classList.remove('hidden');
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        lastFileText = e.target.result;
+        document.getElementById('rawInput').value = lastFileText;
+        populatingHeaders = true;
+        process();
+      };
+      reader.readAsText(file);
+    }
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('border-blue-500', 'bg-blue-50/10');
+      if (e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    // Handle instant re-rendering on element input value modifications inside configs
+    ['meetTitle','meetVenue','meetDate','xcRaceHeader','flipNamesCheck','girlsFirstCheck','showResultsLabelCheck','includeGirlsCheck','includeBoysCheck','xcScoringType','trackScoringType'].forEach(id => {
+      document.getElementById(id).addEventListener('change', () => { if (lastFileText || document.getElementById('rawInput').value.trim()) process(); });
+      document.getElementById(id).addEventListener('input', () => { if (lastFileText || document.getElementById('rawInput').value.trim()) process(); });
+    });
+
+    window.onload = () => {
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+      }
+      document.getElementById('meetType').value = 'cross_country';
+      updateUIVisuals('cross_country');
+      
+      document.getElementById('meetTitle').value = "";
+      document.getElementById('meetVenue').value = "";
+      document.getElementById('meetDate').value = "";
+      document.getElementById('xcRaceHeader').value = "";
+    };
+  </script>
+</body>
+</html>
