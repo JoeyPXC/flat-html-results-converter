@@ -5,6 +5,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en" class="h-full dark bg-black">
 <head>
@@ -3780,15 +3781,28 @@ function exportToSemicolon() {
     return;
   }
 
-  let out = 'Event;Gender;Place;Athlete/Relay;Grade;School;Result;Points\n';
+  // Hy-Tek semicolon delimited format for Athletic.net
+  // Format: D;Lastname;Firstname;;M/F;;TEA;School;;;EventName;Result;M/F;Place;;;D;
+  let out = '';
   const isXC = (document.getElementById('meetType').value === 'cross_country' || document.getElementById('meetType').value === 'college_xc');
   const incGirls = document.getElementById('includeGirlsCheck').checked;
   const incBoys  = document.getElementById('includeBoysCheck').checked;
   const esc = (val) => String(val).replace(/;/g, ',');
 
+  // Split "Lastname, Firstname" into parts; handle names without a comma
+  const splitName = (fullName) => {
+    const comma = fullName.indexOf(',');
+    if (comma !== -1) {
+      return { last: fullName.slice(0, comma).trim(), first: fullName.slice(comma + 1).trim() };
+    }
+    // No comma — treat whole thing as last name
+    return { last: fullName.trim(), first: '' };
+  };
+
   ['girls', 'boys'].forEach(gender => {
     if (gender === 'girls' && !incGirls) return;
     if (gender === 'boys'  && !incBoys)  return;
+    const genderCode = gender === 'girls' ? 'F' : 'M';
 
     const evts = currentParsedSections[gender] || [];
     evts.forEach(evt => {
@@ -3803,14 +3817,13 @@ function exportToSemicolon() {
 
       evt.entries.forEach(entry => {
         const place  = entry.place || '';
-        const name   = isXC ? (entry.name || '') : (evt.kind === 'relay' ? (entry.school || '') : (entry.name || ''));
-        const grade  = evt.kind === 'relay' ? '' : (entry.year || '');
-        const school = cleanSchoolName(entry.school || '');
-        const result = entry.result || '';
-        const raw    = ptsMap.get(entry);
-        const pts    = (raw !== undefined && raw !== '') ? raw : 0;
-        const ptsStr = pts > 0 ? Number(pts.toFixed(2)).toString().replace(/\.00$/, '') : '';
-        out += `${esc(evt.header)};${esc(gender)};${esc(place)};${esc(name)};${esc(grade)};${esc(school)};${esc(result)};${esc(ptsStr)}\n`;
+        const rawName = isXC ? (entry.name || '') : (evt.kind === 'relay' ? (entry.school || '') : (entry.name || ''));
+        const { last, first } = splitName(rawName);
+        const school = esc(cleanSchoolName(entry.school || ''));
+        const result = esc(entry.result || '');
+        const eventName = esc(evt.header);
+        // D;Lastname;Firstname;;Gender;;TEA;School;;;EventName;Result;Gender;Place;;;D;
+        out += `D;${esc(last)};${esc(first)};;${genderCode};;TEA;${school};;;${eventName};${result};${genderCode};${esc(place)};;;D;\n`;
       });
     });
   });
