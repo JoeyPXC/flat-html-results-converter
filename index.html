@@ -383,11 +383,8 @@ body { font-family: 'Inter', sans-serif; }
         </span>
       </div>
       <div class="flex flex-wrap items-center gap-1.5 output-btn-row">
-        <button id="exportCsvBtn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
-          <i class="fa-solid fa-file-csv mr-1"></i>Export CSV
-        </button>
         <button id="exportSemiBtn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-teal-600 dark:text-teal-400 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
-          <i class="fa-solid fa-grip-lines-vertical mr-1"></i>Export Semicolon
+          <i class="fa-solid fa-upload mr-1"></i>Athletic.net CSV
         </button>
         <button id="copyTableBtn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-violet-600 dark:text-violet-400 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
           <i class="fa-solid fa-table mr-1"></i>Copy Table
@@ -3722,58 +3719,6 @@ function exportAPStyle() {
   setTab('ap');
 }
 
-function exportToCSV() {
-  if (!currentParsedSections) {
-    toast('No compiled data to export.');
-    return;
-  }
-  
-  let csv = 'Event,Gender,Place,Athlete/Relay,Grade,School,Result,Points\n';
-  const isXC = (document.getElementById('meetType').value === 'cross_country' || document.getElementById('meetType').value === 'college_xc');
-  const incGirls = document.getElementById('includeGirlsCheck').checked;
-  const incBoys = document.getElementById('includeBoysCheck').checked;
-  const escape = (val) => `"${String(val).replace(/"/g, '""')}"`;
-
-  ['girls', 'boys'].forEach(gender => {
-    if (gender === 'girls' && !incGirls) return;
-    if (gender === 'boys' && !incBoys) return;
-    
-    const evts = currentParsedSections[gender] || [];
-    evts.forEach(evt => {
-      // Compute points once per event, reuse for all entries
-      let ptsMap;
-      if (isXC) {
-        ptsMap = scoreXCEvent(evt.entries).ptsMap;
-      } else {
-        const isWC = isWheelchairEvent(evt.header);
-        const isScoreableEvt = isScoreable(evt.header, evt._forceNonScoring || false);
-        ptsMap = calculateTiedPoints(evt.entries, evt.kind === 'relay', isWC, isScoreableEvt);
-      }
-
-      evt.entries.forEach(entry => {
-        const place  = entry.place || '';
-        const name   = isXC ? (entry.name || '') : (evt.kind === 'relay' ? (entry.school || '') : (entry.name || ''));
-        const grade  = evt.kind === 'relay' ? '' : (entry.year || '');
-        const school = cleanSchoolName(entry.school || '');
-        const result = entry.result || '';
-        const raw    = ptsMap.get(entry);
-        const pts    = (raw !== undefined && raw !== '') ? raw : 0;
-        const ptsStr = pts > 0 ? Number(pts.toFixed(2)).toString().replace(/\.00$/, '') : '';
-        csv += `${escape(evt.header)},${escape(gender)},${escape(place)},${escape(name)},${escape(grade)},${escape(school)},${escape(result)},${escape(ptsStr)}\n`;
-      });
-    });
-  });
-  
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement("a");
-  const url = URL.createObjectURL(blob);
-  link.setAttribute("href", url);
-  link.setAttribute("download", (document.getElementById('meetTitle').value.trim().replace(/\s+/g, '_') || 'meet_results') + '.csv');
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  toast('CSV exported!');
-}
 
 function exportToSemicolon() {
   if (!currentParsedSections) {
@@ -3781,62 +3726,94 @@ function exportToSemicolon() {
     return;
   }
 
-  // Hy-Tek semicolon delimited format for Athletic.net
-  // Format: D;Lastname;Firstname;;M/F;;TEA;School;;;EventName;Result;M/F;Place;;;D;
-  let out = '';
-  const isXC = (document.getElementById('meetType').value === 'cross_country' || document.getElementById('meetType').value === 'college_xc');
+  const meetType = document.getElementById('meetType').value;
+  const isXC = (meetType === 'cross_country' || meetType === 'college_xc');
   const incGirls = document.getElementById('includeGirlsCheck').checked;
   const incBoys  = document.getElementById('includeBoysCheck').checked;
-  const esc = (val) => String(val).replace(/;/g, ',');
+  const meetName = document.getElementById('meetTitle').value.trim().replace(/\s+/g, '_') || 'meet_results';
 
-  // Split "Lastname, Firstname" into parts; handle names without a comma
+  // Split "Lastname, Firstname" — names without comma go entirely into last
   const splitName = (fullName) => {
     const comma = fullName.indexOf(',');
-    if (comma !== -1) {
-      return { last: fullName.slice(0, comma).trim(), first: fullName.slice(comma + 1).trim() };
-    }
-    // No comma — treat whole thing as last name
+    if (comma !== -1) return { last: fullName.slice(0, comma).trim(), first: fullName.slice(comma + 1).trim() };
     return { last: fullName.trim(), first: '' };
   };
 
-  ['girls', 'boys'].forEach(gender => {
-    if (gender === 'girls' && !incGirls) return;
-    if (gender === 'boys'  && !incBoys)  return;
-    const genderCode = gender === 'girls' ? 'F' : 'M';
+  // Escape commas inside field values
+  const esc = (val) => String(val ?? '').replace(/,/g, ' ');
 
-    const evts = currentParsedSections[gender] || [];
-    evts.forEach(evt => {
-      let ptsMap;
-      if (isXC) {
-        ptsMap = scoreXCEvent(evt.entries).ptsMap;
-      } else {
-        const isWC = isWheelchairEvent(evt.header);
-        const isScoreableEvt = isScoreable(evt.header, evt._forceNonScoring || false);
-        ptsMap = calculateTiedPoints(evt.entries, evt.kind === 'relay', isWC, isScoreableEvt);
-      }
+  let rows = [];
+  let filename = '';
 
-      evt.entries.forEach(entry => {
-        const place  = entry.place || '';
-        const rawName = isXC ? (entry.name || '') : (evt.kind === 'relay' ? (entry.school || '') : (entry.name || ''));
-        const { last, first } = splitName(rawName);
-        const school = esc(cleanSchoolName(entry.school || ''));
-        const result = esc(entry.result || '');
-        const eventName = esc(evt.header);
-        // D;Lastname;Firstname;;Gender;;TEA;School;;;EventName;Result;Gender;Place;;;D;
-        out += `D;${esc(last)};${esc(first)};;${genderCode};;TEA;${school};;;${eventName};${result};${genderCode};${esc(place)};;;D;\n`;
+  if (isXC) {
+    // ── Athletic.net Custom Format — Cross Country ──────────────────────────
+    // Columns: Place,FirstName,LastName,Gender,Grade,Team,Time
+    rows.push('Place,FirstName,LastName,Gender,Grade,Team,Time');
+    filename = meetName + '_anet_xc.csv';
+
+    ['girls', 'boys'].forEach(gender => {
+      if (gender === 'girls' && !incGirls) return;
+      if (gender === 'boys'  && !incBoys)  return;
+      const genderCode = gender === 'girls' ? 'F' : 'M';
+
+      const evts = currentParsedSections[gender] || [];
+      evts.forEach(evt => {
+        evt.entries.forEach(entry => {
+          const { last, first } = splitName(entry.name || '');
+          const team  = esc(cleanSchoolName(entry.school || ''));
+          const time  = esc(entry.result || '');
+          const place = entry.place || '';
+          const grade = entry.year || '';
+          rows.push(`${place},${esc(first)},${esc(last)},${genderCode},${grade},${team},${time}`);
+        });
       });
     });
-  });
 
-  const blob = new Blob([out], { type: 'text/plain;charset=utf-8;' });
+  } else {
+    // ── Athletic.net Custom Format — Track & Field ──────────────────────────
+    // Required cols: Type,Gender,Event,Result,Team,FirstName1,LastName1
+    // Optional cols included: Division,Place,Grade1
+    rows.push('Type,Gender,Division,Event,Place,Result,Team,FirstName1,LastName1,Grade1');
+    filename = meetName + '_anet_tf.csv';
+
+    ['girls', 'boys'].forEach(gender => {
+      if (gender === 'girls' && !incGirls) return;
+      if (gender === 'boys'  && !incBoys)  return;
+      const genderCode = gender === 'girls' ? 'F' : 'M';
+
+      const evts = currentParsedSections[gender] || [];
+      evts.forEach(evt => {
+        const isRelay = evt.kind === 'relay';
+        const type    = isRelay ? 'Relay' : 'Event';
+        const eventName = esc(evt.header);
+
+        evt.entries.forEach(entry => {
+          const place = entry.place || '';
+          const result = esc(entry.result || '');
+          const team   = esc(cleanSchoolName(entry.school || ''));
+          const grade  = isRelay ? '' : (entry.year || '');
+
+          if (isRelay) {
+            // Relay: team name as both FirstName1/LastName1 placeholder
+            rows.push(`${type},${genderCode},,${eventName},${place},${result},${team},${esc(team)},,`);
+          } else {
+            const { last, first } = splitName(entry.name || '');
+            rows.push(`${type},${genderCode},,${eventName},${place},${result},${team},${esc(first)},${esc(last)},${grade}`);
+          }
+        });
+      });
+    });
+  }
+
+  const out  = rows.join('\n');
+  const blob = new Blob([out], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
-  const url  = URL.createObjectURL(blob);
-  link.setAttribute('href', url);
-  link.setAttribute('download', (document.getElementById('meetTitle').value.trim().replace(/\s+/g, '_') || 'meet_results') + '_semicolon.txt');
+  link.setAttribute('href', URL.createObjectURL(blob));
+  link.setAttribute('download', filename);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  toast('Semicolon-delimited file exported!');
+  toast('Athletic.net CSV exported!');
 }
 
 function copyAsTable() {
@@ -4251,7 +4228,6 @@ document.getElementById('saveApBtn').addEventListener('click', () => {
 });
 document.getElementById('copyBtn').addEventListener('click',    copyContent);
 document.getElementById('printBtn').addEventListener('click',   printResults);
-document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
 document.getElementById('exportSemiBtn').addEventListener('click', exportToSemicolon);
 document.getElementById('copyTableBtn').addEventListener('click', copyAsTable);
 document.getElementById('downloadBtn').addEventListener('click',downloadHtm);
