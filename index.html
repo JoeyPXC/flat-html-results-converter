@@ -1,11 +1,3 @@
-
-
-
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="en" class="h-full dark bg-black">
 <head>
@@ -2096,6 +2088,91 @@ function parseAthMeet(raw) {
     });
     flushEvent();
 
+    if (sections.girls.length > 0 || sections.boys.length > 0) return sections;
+  }
+
+  // MileSplit NEW single-line format (PLACE ATHLETE TEAM MARK [HEAT] header, one row per line)
+  const msNewHdrRe = /^PLACE\s+(ATHLETE\s+)?TEAM\s+MARK(\s+(HEAT|POINTS|PTS|SCORE))?\s*$/i;
+  const msNewGenderRe = /^(?:(?:Varsity|Division\s+\S+|Div\.?\s*\S+)\s+)?(Boys|Girls|Mens|Womens|Men's|Women's)\s+(.+)$/i;
+  const msNewRowRe = /^(\d+|--)\s+\S+/;
+  let msNewHdrIdx = -1;
+  for (let k = 0; k < lines.length - 1; k++) {
+    if (msNewHdrRe.test(lines[k]) && msNewRowRe.test(lines[k + 1]) && k > 0 && msNewGenderRe.test(lines[k - 1])) { msNewHdrIdx = k; break; }
+  }
+  if (msNewHdrIdx !== -1) {
+    log("MileSplit (new single-line) format detected!");
+    setSourceBadge("MileSplit");
+    const markRe = /^(?:[\d:]+\.\d+[a-z]*|\d+-\d+(?:\.\d+)?|\d+(?:\.\d+)?m?|DQ|DNS|DNF|FS|SCR|NT|NH|ND|NM)$/i;
+    const gradeRe = /^(FR|SO|JR|SR|\d{1,2})$/i;
+    // Pass 1: collect team names from relay rows
+    const knownTeams = new Set();
+    {
+      let inRelay = false;
+      for (const l of lines) {
+        if (msNewGenderRe.test(l)) inRelay = /relay/i.test(l);
+        else if (msNewHdrRe.test(l)) continue;
+        else if (inRelay) {
+          const m = l.match(/^(?:\d+|--)\s+(.+?)\s+\S+(?:\s+\d{1,2})?$/);
+          if (m) knownTeams.add(m[1].trim());
+        }
+      }
+    }
+    let ev = null;
+    const flushNew = () => { if (ev && currentGender) sections[currentGender].push(ev); ev = null; };
+    for (let k = 0; k < lines.length; k++) {
+      const line = lines[k];
+      if (/Team Scores\s*$/i.test(line)) { flushNew(); k++; continue; }
+      const gm = line.match(msNewGenderRe);
+      if (gm && lines[k + 1] && msNewHdrRe.test(lines[k + 1])) {
+        flushNew();
+        const g = gm[1].toLowerCase();
+        currentGender = (g.startsWith('girl') || g.startsWith('women')) ? 'girls' : 'boys';
+        let kind = 'running';
+        if (/relay/i.test(line)) kind = 'relay';
+        else if (/jump|vault/i.test(line)) kind = 'field_vert_horiz';
+        else if (/put|discus|throw|hammer|javelin|shot/i.test(line)) kind = 'field_throw';
+        const header = /\b(Finals|Prelims|Semis|Heats|Trials)\b/i.test(line) ? line : line + ' Finals';
+        ev = { header, kind, entries: [], gender: currentGender };
+        log(`Parsed MileSplit Event: [${currentGender.toUpperCase()}] ${header}`);
+        ev._hasPts = /POINTS|PTS|SCORE/i.test(lines[k + 1]);
+        k++; // skip column header
+        continue;
+      }
+      if (!ev) continue;
+      const rm = line.match(/^(\d+|--)\s+(.+)$/);
+      if (!rm) { if (/^Results above have been formatted/i.test(line)) flushNew(); continue; }
+      const place = rm[1];
+      const toks = rm[2].split(/\s+/);
+      let heat = null;
+      if (ev._hasPts) {
+        if (toks.length >= 3 && /^\d{1,3}$/.test(toks[toks.length - 1]) && markRe.test(toks[toks.length - 2]) && !/^\d{1,3}$/.test(toks[toks.length - 2])) toks.pop();
+      } else if (ev.kind !== 'relay' || toks.length > 2) {
+        if (toks.length >= 3 && /^\d{1,2}$/.test(toks[toks.length - 1]) && markRe.test(toks[toks.length - 2]) && !/^\d{1,2}$/.test(toks[toks.length - 2]) ) {
+          heat = parseInt(toks.pop());
+        }
+      }
+      if (toks.length < 2) continue;
+      let result = toks.pop();
+      if (!markRe.test(result)) continue;
+      if (ev.kind === 'relay') {
+        ev.entries.push({ place, school: cleanSchoolName(toks.join(' ')), result: cleanResult(result, ev.header), members: [], heat: heat || null });
+        continue;
+      }
+      let gi = -1;
+      for (let t = 1; t < toks.length; t++) { if (/^(FR|SO|JR|SR)$/i.test(toks[t])) { gi = t; break; } }
+      if (gi === -1) for (let t = 2; t < toks.length; t++) { if (/^\d{1,2}$/.test(toks[t])) { gi = t; break; } }
+      let name, grade = '', school;
+      if (gi !== -1) {
+        name = toks.slice(0, gi).join(' '); grade = toks[gi].toUpperCase(); school = toks.slice(gi + 1).join(' ');
+      } else {
+        let split = -1;
+        for (let t = 1; t < toks.length; t++) { if (knownTeams.has(toks.slice(t).join(' '))) { split = t; break; } }
+        if (split === -1) split = Math.min(2, toks.length - 1);
+        name = toks.slice(0, split).join(' '); school = toks.slice(split).join(' ');
+      }
+      ev.entries.push({ place, year: grade, name, school: cleanSchoolName(school), result: cleanResult(result, ev.header), heat: heat || null });
+    }
+    flushNew();
     if (sections.girls.length > 0 || sections.boys.length > 0) return sections;
   }
 
