@@ -584,6 +584,13 @@ function cleanResult(r, evtHeader = "") {
   cleaned = cleaned.replace(/^([\d:]+\.\d+)a(\s*\(.+\))?$/i, (match, time, wind) => {
     return wind ? time + wind : time;
   });
+
+  // Athletic.net's field marks retain decimals for field events other than discus.
+  // Preserve .00, .25, .50, and .75 for jumps, vaults, shot put, hammer, javelin, etc.
+  // Discus is the exception: omit only an unnecessary trailing .00.
+  if (/discus/i.test(evtHeader || '')) {
+    cleaned = cleaned.replace(/(\d+-\d+)\.00$/, '$1');
+  }
   return cleaned.trim();
 }
 
@@ -2646,34 +2653,21 @@ function buildRunningEvent(gender, evtHeader, entries, forceNonScoring=false, fo
   const mergeAndRerank  = hasHeats && !isPrelimRound;
 
   if (mergeAndRerank) {
-    // Re-rank merged list by time
+    // Sort display order by time when merging heats, but NEVER replace the
+    // official place supplied by Athletic.net (photo finishes/tie-breaks may
+    // not be visible in the displayed performance).
     entries = sortEntries(entries);
-    let currentPlace = 1;
-    entries.forEach(e => {
-      const resUpper = (e.result || '').trim().toUpperCase();
-      if (/^(DQ|DNS|DNF|FS|SCR|NT)$/.test(resUpper) || parseTimeToSeconds(e.result) === Infinity) {
-        e.place = '--';
-      } else {
-        e.place = String(currentPlace++);
-      }
-    });
   } else if (!scoreable) {
+    // Prelims/heats may need time-order display (notably 100m/200m), but the
+    // official within-heat placing must remain exactly as parsed from the source.
+    // Sorting changes row order only; it must not recalculate e.place.
     entries = sortEntries(entries);
-    let currentPlace = 1;
-    entries.forEach(e => {
-      const resUpper = (e.result || '').trim().toUpperCase();
-      if (/^(DQ|DNS|DNF|FS|SCR|NT)$/.test(resUpper) || parseTimeToSeconds(e.result) === Infinity) {
-        e.place = '--';
-      } else {
-        e.place = String(currentPlace++);
-      }
-    });
   }
 
   // Detect if any entry in this event has a wind reading
   const eventHasWind = entries.some(e => hasWindReading(e.result));
 
-  // Real HyTek layout: Place(5)+"  "(2)+Athlete(24)+" "(1)+School(36)+Time(7,right)+Pts(12,right) = 87
+  // Real HyTek layout: Place(5)+"  "(2)+Athlete(24)+" "(1)+School(36)+Time(8,right)+Pts(12,right) = 88
   // Wind layout keeps same total but splits time field: School(30)+Time(10,right)+" "(1)+Wind(8,left)... 
   // We derive wind layout from the actual HyTek wind header to stay at 87 total.
   const SCHOOL_W   = 33; // individual event school column (was 36; 3 chars freed for Yr column)
@@ -2852,19 +2846,12 @@ function buildRelayEvent(gender, evtHeader, entries, forceNonScoring=false, forc
   const scoreable = isScoreable(evtHeader, forceNonScoring);
 
   if (!scoreable) {
+    // Keep the existing time-based display order for relay prelims, but retain
+    // Athletic.net's official placing instead of assigning places ourselves.
     entries = sortEntries(entries);
-    let currentPlace = 1;
-    entries.forEach(e => {
-      const resUpper = (e.result || '').trim().toUpperCase();
-      if (/^(DQ|DNS|DNF|FS|SCR|NT)$/.test(resUpper) || parseTimeToSeconds(e.result) === Infinity) {
-        e.place = '--';
-      } else {
-        e.place = String(currentPlace++);
-      }
-    });
   }
 
-  // Real HyTek relay layout: Place(5)+"  "(2)+School(61)+Time(7,right)+Pts(12,right) = 87
+  // Real HyTek relay layout: Place(5)+"  "(2)+School(61)+Time(8,right)+Pts(12,right) = 88
   const RELAY_SCHOOL_W = 61;
   const RELAY_TIME_W   = 7;
   const RELAY_PTS_W    = 12;
@@ -2910,23 +2897,13 @@ function buildFieldEvent(gender, evtHeader, entries, forceNonScoring=false, forc
   const fullEvtName = cleanEventTitle(gender, evtHeader, forceCollegiate);
   const scoreable = isScoreable(evtHeader, forceNonScoring);
 
-  if (!scoreable) {
-    entries = sortEntries(entries);
-    let currentPlace = 1;
-    entries.forEach(e => {
-      const resUpper = (e.result || '').trim().toUpperCase();
-      if (/^(DQ|DNS|DNF|FS|SCR|NT|NM|FOUL|NH)$/.test(resUpper) || parseTimeToSeconds(e.result) === Infinity) {
-        e.place = '--';
-      } else {
-        e.place = String(currentPlace++);
-      }
-    });
-  }
+  // Keep Athletic.net's source order and official placing for field events.
+  // Re-sorting marks can break high-jump/pole-vault miss-count tie-breaks.
 
-  // Real HyTek layout: Place(5)+"  "(2)+Athlete(24)+" "(1)+Yr(2)+" "(1)+School(33)+Time(7,right)+Pts(12,right) = 87
+  // Real HyTek layout: Place(5)+"  "(2)+Athlete(24)+" "(1)+Yr(2)+" "(1)+School(33)+Time(8,right)+Pts(12,right) = 88
   const FIELD_YR_W     = 2;
   const FIELD_SCHOOL_W = 33; // was 36; 3 chars freed for Yr column
-  const FIELD_TIME_W   = 7;
+  const FIELD_TIME_W   = 8;
   const FIELD_PTS_W    = 12;
 
   let out = `\n${fullEvtName}\n${sep}\n`;
@@ -2943,7 +2920,7 @@ function buildFieldEvent(gender, evtHeader, entries, forceNonScoring=false, forc
     const nameF   = pad(flipName(e.name || ''), 24, 'left');
     const yrF     = pad((e.year || '').toString().substring(0, FIELD_YR_W), FIELD_YR_W, 'left');
     const schoolF = pad(cleanSchoolName(e.school||''), FIELD_SCHOOL_W, 'left');
-    const resultF = (e.result||'').trim().substring(0, FIELD_TIME_W).padStart(FIELD_TIME_W);
+    const resultF = (e.result||'').trim().padStart(FIELD_TIME_W);
     const ptsF    = pad(ptsStr, FIELD_PTS_W, 'right');
 
     out += `${placeF}  ${nameF} ${yrF} ${schoolF}${resultF}${ptsF}\n`;
