@@ -605,7 +605,8 @@ function isScoreable(evtHeader, forceNonScoring=false) {
 
 function parseTimeToSeconds(timeStr) {
   if (!timeStr) return Infinity;
-  const s = timeStr.trim().toUpperCase();
+  // Strip wind reading like (-0.6) / (+1.2) so a negative wind isn't mistaken for a feet-inches mark
+  const s = timeStr.replace(/\s*\([^)]*\)\s*$/, '').trim().toUpperCase();
   if (/^(DQ|DNS|DNF|FS|SCR|NT|NM|FOUL|NH)$/.test(s) || s.includes('DQ') || s.includes('DNS') || s.includes('DNF')) return Infinity;
   
   if (s.includes('-')) {
@@ -2624,7 +2625,13 @@ function sortEntries(entries) {
     const ra = resultStatusRank(a.result);
     const rb = resultStatusRank(b.result);
     if (ra !== rb) return ra - rb;
-    if (ra === 0) return parseTimeToSeconds(a.result) - parseTimeToSeconds(b.result);
+    if (ra === 0) {
+      const d = parseTimeToSeconds(a.result) - parseTimeToSeconds(b.result);
+      if (d !== 0) return d;
+      // Tied marks: keep the official place order from the source
+      const pa = parseInt(a.place), pb = parseInt(b.place);
+      if (!isNaN(pa) && !isNaN(pb)) return pa - pb;
+    }
     return 0;
   });
 }
