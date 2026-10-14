@@ -28,7 +28,6 @@ body { font-family: 'Inter', sans-serif; }
 .dark .cs::-webkit-scrollbar-track { background: #1e293b; }
 .cs::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 .dark .cs::-webkit-scrollbar-thumb { background: #475569; }
-.retro { text-shadow: 0 0 5px rgba(52,211,153,.4); }
 
 .preview-text {
   color: #0f172a; 
@@ -48,12 +47,10 @@ body { font-family: 'Inter', sans-serif; }
     flex: none !important;
     display: block !important;
   }
-
   main > section:first-of-type {
     height: auto !important;
     overflow: visible !important;
   }
-
   #outputSection {
     height: 100vh !important;
     min-height: 600px;
@@ -61,45 +58,13 @@ body { font-family: 'Inter', sans-serif; }
     display: flex !important;
     flex-direction: column !important;
   }
-
-  #outPreview, #outHtml, #outText {
+  #outPreview, #outHtml {
     font-size: 0.82rem !important;
     line-height: 1.45 !important;
   }
-
   .output-btn-row {
     flex-wrap: wrap !important;
     gap: 6px;
-  }
-}
-
-#jumpToOutput {
-  display: none;
-}
-@media (max-width: 1023px) {
-  #jumpToOutput {
-    display: flex;
-    position: fixed;
-    bottom: 1.25rem;
-    right: 1.25rem;
-    z-index: 100;
-    align-items: center;
-    gap: 0.4rem;
-    background: #2563eb;
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 0.6rem 1rem;
-    border-radius: 9999px;
-    box-shadow: 0 4px 18px rgba(37,99,235,0.45);
-    border: none;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.2s;
-  }
-  #jumpToOutput.hidden-btn {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(10px);
   }
 }
 
@@ -110,18 +75,10 @@ body { font-family: 'Inter', sans-serif; }
     height: auto !important;
     overflow: visible !important;
   }
-  header, 
-  section:first-of-type, 
-  #toast, 
-  #noData, 
-  .bg-slate-950.border-b, 
-  #paneHtml, 
-  #paneText {
+  header, section:first-of-type, #noData, #paneHtml {
     display: none !important;
   }
-  main {
-    display: block !important;
-  }
+  main { display: block !important; }
   section:last-of-type {
     width: 100% !important;
     height: auto !important;
@@ -165,7 +122,7 @@ body { font-family: 'Inter', sans-serif; }
           <span id="modeBadge" class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">Track Mode</span>
         </h1>
         <p class="text-xs text-slate-500 dark:text-slate-400">
-          Easily change results to look like HyTek Meet Manager Flat HTML Results.
+          Easily change results into HyTek Meet Manager Flat HTML Results.
         </p>
       </div>
     </div>
@@ -227,8 +184,8 @@ body { font-family: 'Inter', sans-serif; }
           <div id="xcScoringRow" class="md:col-span-2 hidden">
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Cross Country Scoring Type</label>
             <select id="xcScoringType" class="w-full px-3 py-2 bg-slate-50 dark:bg-black border border-slate-200 dark:border-slate-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
-              <option value="cross_country" selected>Standard XC Scoring (High School)</option>
-              <option value="college_xc">College / Collegiate XC (TFRRS &amp; NCAA Tiebreaker)</option>
+              <option value="cross_country" selected>Standard XC Scoring (5 Scored + 2 Displacement)</option>
+              <option value="college_xc">College / Collegiate XC (NCAA Rules)</option>
             </select>
           </div>
           <div class="md:col-span-2 hidden" id="xcRaceHeaderContainer">
@@ -245,7 +202,7 @@ body { font-family: 'Inter', sans-serif; }
             <input type="checkbox" id="girlsFirstCheck" checked class="w-4 h-4 text-blue-600 rounded mr-2"> <span id="girlsFirstLabel">Girls events before Boys</span>
           </label>
           <label class="flex items-center text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer">
-            <input type="checkbox" id="showResultsLabelCheck" checked class="w-4 h-4 text-blue-600 rounded mr-2"> Include "Results" centered header
+            <input type="checkbox" id="showResultsLabelCheck" checked class="w-4 h-4 text-blue-600 rounded mr-2"> Include "Results" header
           </label>
         </div>
       </div>
@@ -279,9 +236,9 @@ body { font-family: 'Inter', sans-serif; }
 
       <!-- Console Log -->
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
-        <button id="consoleToggle" class="w-full flex items-center justify-between text-xs font-semibold text-slate-300 uppercase tracking-wider">
+        <div class="w-full flex items-center justify-between text-xs font-semibold text-slate-300 uppercase tracking-wider">
           <span class="flex items-center gap-2"><i class="fa-solid fa-terminal text-blue-500"></i> Status Console</span>
-        </button>
+        </div>
         <div id="consoleLog" class="pt-2 border-t border-slate-800 text-[10px] font-mono text-amber-400 space-y-0.5 max-h-40 overflow-y-auto cs">
           <div class="text-slate-500">> System Ready...</div>
         </div>
@@ -333,7 +290,39 @@ body { font-family: 'Inter', sans-serif; }
 </main>
 
 <script>
-// Tab Switching & Sport Toggle Logic
+// Logging Helper
+function log(msg) {
+  const c = document.getElementById('consoleLog');
+  const d = document.createElement('div');
+  d.textContent = `> ${msg}`;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+}
+
+// Format Name Utility
+function formatName(rawName, flip) {
+  if (!rawName) return '';
+  let clean = rawName.trim().replace(/\s+/g, ' ');
+  if (!flip) return clean;
+  if (clean.includes(',')) return clean; // Already Last, First
+  const parts = clean.split(' ');
+  if (parts.length < 2) return clean;
+  const last = parts.pop();
+  return `${last}, ${parts.join(' ')}`;
+}
+
+// Convert Time to Seconds for sorting/scoring
+function parseTimeToSeconds(timeStr) {
+  if (!timeStr) return 999999;
+  let clean = timeStr.trim().replace(/[^\d:.]/g, '');
+  let parts = clean.split(':');
+  if (parts.length === 2) {
+    return parseFloat(parts[0]) * 60 + parseFloat(parts[1]);
+  }
+  return parseFloat(clean) || 999999;
+}
+
+// Sport Toggle UI Switcher
 const sportToggleTrack = document.getElementById('sportToggleTrack');
 const sportToggleXC = document.getElementById('sportToggleXC');
 const trackScoringRow = document.getElementById('trackScoringRow');
@@ -365,36 +354,192 @@ sportToggleXC.addEventListener('click', () => {
   logoIcon.className = 'fa-solid fa-person-running text-xl';
 });
 
-// Processing Logic
-const processBtn = document.getElementById('processBtn');
-const rawInput = document.getElementById('rawInput');
-const outPreview = document.getElementById('outPreview');
-const outHtml = document.getElementById('outHtml');
-const noData = document.getElementById('noData');
-const panePreview = document.getElementById('panePreview');
-const paneHtml = document.getElementById('paneHtml');
-const tabPreview = document.getElementById('tabPreview');
-const tabHtml = document.getElementById('tabHtml');
+// File Upload Handler
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    document.getElementById('rawInput').value = evt.target.result;
+    log(`File loaded: ${file.name}`);
+  };
+  reader.readAsText(file);
+});
 
-processBtn.addEventListener('click', () => {
-  const text = rawInput.value.trim();
-  if (!text) {
-    alert('Please paste some results first!');
+// Main Processor Engine
+document.getElementById('processBtn').addEventListener('click', () => {
+  const rawText = document.getElementById('rawInput').value.trim();
+  if (!rawText) {
+    alert('Please paste results first.');
     return;
   }
-  
-  const title = document.getElementById('meetTitle').value || 'Meet Results';
+
+  log('Processing results into HyTek Flat HTML format...');
+
+  const title = document.getElementById('meetTitle').value || 'HyTek Meet Results';
   const venue = document.getElementById('meetVenue').value || '';
   const date = document.getElementById('meetDate').value || '';
+  const isXC = meetType.value === 'cross_country';
+  const flipNames = document.getElementById('flipNamesCheck').checked;
+  const showResultsHeader = document.getElementById('showResultsLabelCheck').checked;
 
-  let formattedText = `${title}\n${venue}\n${date}\n\n${text}`;
+  let outputLines = [];
 
-  outPreview.textContent = formattedText;
-  outHtml.textContent = `<html><body><pre>${formattedText}</pre></body></html>`;
+  // Center Header Alignment Utility
+  const centerText = (text, width = 68) => {
+    if (!text) return '';
+    const pad = Math.max(0, Math.floor((width - text.length) / 2));
+    return ' '.repeat(pad) + text;
+  };
 
-  noData.classList.add('hidden');
-  panePreview.classList.remove('hidden');
+  outputLines.push(centerText(title));
+  if (venue) outputLines.push(centerText(venue));
+  if (date) outputLines.push(centerText(date));
+  if (showResultsHeader) {
+    outputLines.push(centerText('Results'));
+  }
+  outputLines.push('');
+
+  const lines = rawText.split('\n');
+  let currentEvent = isXC ? (document.getElementById('xcRaceHeader').value || 'Event 1  Boys 5k Run CC') : 'Event 1  Results';
+  let entries = [];
+
+  lines.forEach(line => {
+    let trimmed = line.trim();
+    if (!trimmed) return;
+
+    // Detect Event / Race Title Line
+    if (trimmed.match(/^(Event|Race|\d+k|Boys|Girls|Men|Women)/i) && !trimmed.match(/^\d+[\s\t]/)) {
+      if (entries.length > 0) {
+        formatAndAppendEvent(outputLines, currentEvent, entries, flipNames, isXC);
+        entries = [];
+      }
+      currentEvent = trimmed;
+      return;
+    }
+
+    // Parse Individual Entry (Place Name Team Time/Mark)
+    const match = trimmed.match(/^(\d+)\.?\s+(.+?)\s+([A-Za-z0-9\s.'-]+?)\s+([\d:.]+|DNF|DQ|DNS)$/);
+    if (match) {
+      entries.push({
+        place: match[1],
+        name: formatName(match[2], flipNames),
+        team: match[3].trim(),
+        mark: match[4].trim(),
+        seconds: parseTimeToSeconds(match[4])
+      });
+    } else {
+      // Fallback for lines without clear regex split
+      const parts = trimmed.split(/\s{2,}|\t/);
+      if (parts.length >= 3) {
+        entries.push({
+          place: parts[0].replace('.', ''),
+          name: formatName(parts[1], flipNames),
+          team: parts[2] || '',
+          mark: parts[3] || '',
+          seconds: parseTimeToSeconds(parts[3] || '')
+        });
+      }
+    }
+  });
+
+  if (entries.length > 0) {
+    formatAndAppendEvent(outputLines, currentEvent, entries, flipNames, isXC);
+  }
+
+  const finalResultText = outputLines.join('\n');
+  
+  document.getElementById('outPreview').textContent = finalResultText;
+  document.getElementById('outHtml').textContent = `<html>\n<head>\n<title>${title}</title>\n</head>\n<body bgcolor="#ffffff">\n<pre>\n${finalResultText}\n</pre>\n</body>\n</html>`;
+
+  document.getElementById('noData').classList.add('hidden');
+  document.getElementById('panePreview').classList.remove('hidden');
+  log('Format build complete!');
 });
+
+// Format Event Block with Fixed Columns + HyTek Cross Country Scoring
+function formatAndAppendEvent(outputLines, eventTitle, entries, flipNames, isXC) {
+  outputLines.push(eventTitle);
+  outputLines.push('='.repeat(68));
+  
+  if (isXC) {
+    outputLines.push('Name                    Year School                  Finals  Points');
+    outputLines.push('='.repeat(68));
+
+    // Calculate XC Team Scores
+    let teamScores = {};
+    let teamRunners = {};
+
+    entries.forEach(e => {
+      if (!teamRunners[e.team]) teamRunners[e.team] = [];
+      teamRunners[e.team].push(e);
+    });
+
+    let scorePoints = 1;
+    entries.forEach(e => {
+      let runners = teamRunners[e.team];
+      if (runners.length >= 5 && runners.indexOf(e) < 7) {
+        e.points = scorePoints++;
+      } else {
+        e.points = '';
+      }
+    });
+
+    entries.forEach(e => {
+      const name = e.name.padEnd(23, ' ').substring(0, 23);
+      const yr = '  '; 
+      const school = e.team.padEnd(23, ' ').substring(0, 23);
+      const mark = e.mark.padStart(8, ' ');
+      const pts = String(e.points || '').padStart(6, ' ');
+      outputLines.push(`${name} ${yr} ${school} ${mark} ${pts}`);
+    });
+
+    outputLines.push('');
+    outputLines.push('                               Team Scores');
+    outputLines.push('='.repeat(68));
+    outputLines.push('Rank Team                  Total    1    2    3    4    5   *6   *7');
+    outputLines.push('='.repeat(68));
+
+    let scoresList = [];
+    Object.keys(teamRunners).forEach(team => {
+      let runners = teamRunners[team];
+      if (runners.length >= 5) {
+        let total = 0;
+        for (let i = 0; i < 5; i++) total += runners[i].points;
+        scoresList.push({ team, total, runners });
+      }
+    });
+
+    scoresList.sort((a, b) => a.total - b.total);
+
+    scoresList.forEach((s, idx) => {
+      const rank = String(idx + 1).padStart(3, ' ');
+      const team = s.team.padEnd(20, ' ').substring(0, 20);
+      const tot = String(s.total).padStart(6, ' ');
+      const p = s.runners.map(r => String(r.points || '').padStart(4, ' ')).join('');
+      outputLines.push(`${rank} ${team} ${tot} ${p}`);
+    });
+
+  } else {
+    outputLines.push('     Name                    Year School                  Finals');
+    outputLines.push('='.repeat(68));
+    entries.forEach(e => {
+      const plc = String(e.place).padStart(3, ' ');
+      const name = e.name.padEnd(23, ' ').substring(0, 23);
+      const school = e.team.padEnd(22, ' ').substring(0, 22);
+      const mark = e.mark.padStart(8, ' ');
+      outputLines.push(`${plc} ${name}      ${school} ${mark}`);
+    });
+  }
+
+  outputLines.push('\n');
+}
+
+// Tab Switching
+const tabPreview = document.getElementById('tabPreview');
+const tabHtml = document.getElementById('tabHtml');
+const panePreview = document.getElementById('panePreview');
+const paneHtml = document.getElementById('paneHtml');
 
 tabPreview.addEventListener('click', () => {
   panePreview.classList.remove('hidden');
@@ -410,24 +555,31 @@ tabHtml.addEventListener('click', () => {
   tabPreview.className = 'px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5';
 });
 
+// Action Controls
 document.getElementById('clearBtn').addEventListener('click', () => {
-  rawInput.value = '';
-  noData.classList.remove('hidden');
+  document.getElementById('rawInput').value = '';
+  document.getElementById('noData').classList.remove('hidden');
   panePreview.classList.add('hidden');
   paneHtml.classList.add('hidden');
+  log('Cleared contents.');
 });
 
 document.getElementById('copyBtn').addEventListener('click', () => {
-  navigator.clipboard.writeText(outPreview.textContent);
-  alert('Copied to clipboard!');
+  const content = document.getElementById('outPreview').textContent;
+  if (!content) return;
+  navigator.clipboard.writeText(content);
+  log('Copied output text to clipboard!');
 });
 
 document.getElementById('downloadBtn').addEventListener('click', () => {
-  const blob = new Blob([outHtml.textContent], { type: 'text/html' });
+  const htmlContent = document.getElementById('outHtml').textContent;
+  if (!htmlContent) return;
+  const blob = new Blob([htmlContent], { type: 'text/html' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'results.htm';
   a.click();
+  log('Downloaded results.htm file.');
 });
 </script>
 </body>
