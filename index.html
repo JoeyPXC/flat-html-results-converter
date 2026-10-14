@@ -1,220 +1,434 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Perry Results Importer</title>
-<style>
-body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;margin:0;padding:16px;background:#111;color:#eee}
-h1{font-size:20px;margin:0 0 4px;color:#fd0}.sub{color:#999;font-size:13px;margin-bottom:14px}
-.card{background:#1c1c1c;border:1px solid #333;border-radius:10px;padding:12px;margin-bottom:12px}
-label{font-size:12px;color:#aaa;display:block;margin:6px 0 2px}
-input[type=text],input[type=date],input[type=number],textarea{background:#000;color:#fff;border:1px solid #444;border-radius:6px;padding:7px;font-size:14px;width:100%;box-sizing:border-box}
-.row{display:flex;gap:8px;flex-wrap:wrap}.row>div{flex:1;min-width:140px}
-button{background:#fd0;color:#000;border:0;border-radius:6px;padding:9px 14px;font-weight:700;cursor:pointer;margin:6px 6px 0 0}
-button.alt{background:#333;color:#fff}
-table{border-collapse:collapse;width:100%;font-size:13px}th,td{border-bottom:1px solid #333;padding:4px 6px;text-align:left}th{color:#fd0}
-.wrap{overflow-x:auto;max-height:420px;overflow-y:auto}.warn{color:#f90;font-size:13px}
-#print{display:none}
-@media print{body{background:#fff;color:#000}.noprint{display:none!important}#print{display:block}
-#print h2{font-size:16px;margin:14px 0 4px;page-break-after:avoid}#print table{font-size:11px}#print th,#print td{border-bottom:1px solid #999;color:#000}}
-</style></head><body>
-<div class="noprint">
-<h1>Perry Results Importer</h1>
-<div class="sub">Load your Hytek-style results pages (.htm / .txt). Everything runs in this page; nothing is uploaded.</div>
-<div class="card">
- <label>Results files (pick several to add a whole season)</label><input type="file" id="files" multiple accept=".htm,.html,.txt">
- <label>...or paste results text</label><textarea id="paste" rows="3"></textarea>
- <div class="row"><div><label>School to keep</label><input type="text" id="school" value="Perry"></div>
- <div><label>Meet date(s) - e.g. 5/27/26 or 5/27 & 5/29/26</label><input type="text" id="datetxt" placeholder="5/27/26, 5/21-5/23/26, or 5/27 & 5/29/26"></div>
- <div><label>Points credit</label><select id="pcredit" style="background:#000;color:#fff;border:1px solid #444;border-radius:6px;padding:7px;font-size:14px;width:100%"><option value="1">Full points</option><option value="0.5">Half points (9th/10th invitational)</option></select></div>
- <div><label>Season year (spring = grad year of seniors)</label><input type="number" id="season" placeholder="auto from title"></div></div>
- <button id="add">Add meet(s)</button><button class="alt" id="clear">Clear all</button>
- <div id="msg" class="warn"></div>
-</div>
-<div class="card"><b>Results log</b> <span id="count" style="color:#999"></span>
- <div><button id="dl1">Download results log (CSV)</button><button id="dl2">Download bests by event/grade (CSV)</button><button class="alt" id="pr">Print banquet sheet</button></div>
- <div class="wrap"><table id="tbl"></table></div></div>
-</div>
-<div id="print"></div>
+<html lang="en" class="h-full dark bg-black">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#000000">
+<title>Track &amp; XC Flat HTML / AP Style Converter</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <script>
-// PARSE_START
-const GRADE = { FR: 9, SO: 10, JR: 11, SR: 12 };
-const FIELD = /jump|vault|put|discus|javelin|hammer/i;
-
-function markValue(m, field) {
-  if (!/\d/.test(m)) return null;
-  if (field && m.includes('-') && !m.includes(':')) { const [f, i] = m.split('-'); return parseFloat(f) * 12 + (parseFloat(i) || 0); }
-  const p = m.replace(/[^\d:.]/g, '').split(':').map(Number);
-  return p.length === 2 ? p[0] * 60 + p[1] : p[0];
-}
-
-// Strips unwanted .00 from field event marks while leaving running times & exact decimals intact
-function cleanMark(m, isField) {
-  if (!m) return '';
-  let s = String(m).trim();
-  if (isField || s.includes('-')) {
-    return s.replace(/\.00(?=\s*($|[a-zA-Z]))/, '');
+tailwind.config = {
+  darkMode: 'class',
+  theme: { 
+    extend: { 
+      fontFamily: { 
+        sans: ['Inter','sans-serif'], 
+        mono: ['Fira Code','Courier New','monospace'] 
+      } 
+    } 
   }
-  return s.replace(/^0+:0*/, '');
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght=400;500&family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body { font-family: 'Inter', sans-serif; }
+.cs::-webkit-scrollbar { width: 8px; height: 8px; }
+.cs::-webkit-scrollbar-track { background: #f1f5f9; }
+.dark .cs::-webkit-scrollbar-track { background: #1e293b; }
+.cs::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.dark .cs::-webkit-scrollbar-thumb { background: #475569; }
+.retro { text-shadow: 0 0 5px rgba(52,211,153,.4); }
+
+.preview-text {
+  color: #0f172a; 
+}
+.dark .preview-text {
+  color: #34d399; 
+  text-shadow: 0 0 5px rgba(52,211,153,.4);
 }
 
-// Tidies event names: "Shot Put - 12lb" -> "Shot Put", "100 Meter - Wheelchair" -> "Seated 100m"
-function normEvent(e) {
-  e = e.trim();
-  if (/wheelchair|seated/i.test(e)) {
-    const d = e.match(/^(\d+)\s*(?:Meter|m)\b/i); if (d) return 'Seated ' + d[1] + 'm';
-    const f = e.match(/^(Shot Put|Discus|Javelin|Club)/i); if (f) return 'Seated ' + f[1];
+@media (max-width: 1023px) {
+  html, body {
+    height: auto !important;
+    overflow: auto !important;
   }
-  return e.replace(/^(Shot Put|Discus|Javelin|Hammer)\s*-\s*[\d.]+\s*(?:lbs?|kg)\s*$/i, '$1');
-}
-
-// Reads dates, ranges ("5/21-5/23/26"), or split days ("5/27 & 5/29/26")
-function parseDateText(txt, defYear) {
-  let str = String(txt || '').trim();
-  if (!str) return { err: 'Type the date like 5/27/26, 5/21-5/23/26, or 5/27 & 5/29/26.' };
-
-  str = str.replace(/\s*(?:&|\band\b|,)\s*/gi, '-');
-
-  const m = str.replace(/[\u2013\u2014]|\bto\b/gi, '-').match(/^\s*(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?(?:\s*-\s*(?:(\d{1,2})\/)?(\d{1,2})(?:\/(\d{2,4}))?)?\s*$/);
-  if (!m) return { err: 'Type the date like 5/27/26, a range like 5/21-5/23/26, or split days like 5/27 & 5/29/26.' };
-
-  if (m[4] && !m[6] && (+m[4] > 12 || +m[5] > 31)) { m[6] = m[5]; m[5] = m[4]; m[4] = undefined; }
-
-  let y = m[3] || m[6] || defYear; if (!y) return { err: 'Add the year to the date (like 5/27/26).' };
-  y = +y; if (y < 100) y += 2000;
-
-  const mk = (yy, mo, d) => { const dt = new Date(Date.UTC(yy, mo - 1, d)); return (yy >= 2000 && yy <= 2100 && dt.getUTCMonth() === mo - 1 && dt.getUTCDate() === d) ? dt.toISOString().slice(0, 10) : null; };
-  const start = mk(y, +m[1], +m[2]);
-  const end = m[5] ? mk(y, m[4] ? +m[4] : +m[1], +m[5]) : '';
-
-  if (!start || end === null) return { err: 'That date doesn\'t look right. Please check it.' };
-  if (end && end < start) return { err: 'The second day is before the first day. Please check the dates.' };
-
-  return { start, end: end && end !== start ? end : '' };
-}
-
-function flip(n) { const i = n.indexOf(','); return i < 0 ? n.trim() : (n.slice(i + 1).trim() + ' ' + n.slice(0, i).trim()); }
-
-function parseHytek(text, opt) {
-  const lines = text.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').split(/\r?\n/);
-  const meet = (lines.find(l => l.trim()) || '').trim();
-  const season = opt.season || (meet.match(/(20\d\d)/) || [])[1] || '';
-  const key = (opt.school || '').toLowerCase();
-  const gr = y => { const u = String(y).toUpperCase(); return GRADE[u] || (/^\d{1,2}$/.test(u) ? +u : ''); };
-  const out = []; let ev = null, heat = '', team = null;
-  for (let i = 0; i < lines.length; i++) {
-    const L = lines[i], t = L.trim();
-    const h = t.match(/^(Girls|Boys|Women|Men)\s+(.+)$/);
-    if (h && /^=+$/.test((lines[i + 1] || '').trim())) {
-      const rd = h[2].match(/\s+(Prelims?|Semis?|Semifinals?|Quarterfinals?)$/i);
-      ev = { gender: /^(Girls|Women)$/.test(h[1]) ? 'Girls' : 'Boys', event: normEvent(h[2].replace(/\s+(Prelims?\vert{}Semis?\vert{}Semifinals?\vert{}Quarterfinals?)$/i, '')),
-        round: rd ? (/^semi/i.test(rd[1]) ? 'Semis' : /^quarter/i.test(rd[1]) ? 'Quarters' : 'Prelims') : 'Finals' };
-      ev.field = FIELD.test(h[2]); ev.relay = /relay/i.test(ev.event); ev.skip = /^-/.test(ev.event) || /team/i.test(ev.event); heat = ''; team = null; continue;
-    }
-    if (!ev || ev.skip) continue;
-    const ht = t.match(/^--\s*Heat\s+(\d+)/i); if (ht) { heat = ht[1]; continue; }
-    if (/^\d\)\s/.test(t)) {
-      if (team) t.split(/\s+(?=\d\)\s)/).forEach(c => {
-        const m = c.match(/^(\d)\)\s*(.+?)\s+(FR|SO|JR|SR|\d{1,2})\s*$/i);
-        if (m) team.legs.push({ leg: +m[1], name: flip(m[2]), grade: gr(m[3]) });
-      });
-      continue;
-    }
-    const tail = '\\s{2,}(\\S+)(?:\\s+\\(([^)]*)\\))?(?:\\s+(\\S+))?\\s*$';
-    const m = ev.relay ? L.match(new RegExp('^\\s*(\\S+)\\s+()()(.+?)' + tail))
-                       : L.match(new RegExp('^\\s*(\\S+)\\s+(.+?)\\s+(FR|SO|JR|SR|\\d{1,2})\\s+(.+?)' + tail, 'i'));
-    team = null;
-    if (!m || !/^(\d+|--)$/.test(m[1])) continue;
-    const school = m[4].trim(); if (!school.toLowerCase().includes(key)) continue;
-    const cleanM = cleanMark(m[5], ev.field);
-    const base = { Season: season, Meet: meet, Date: opt.date || '', EndDate: opt.endDate && opt.endDate !== opt.date ? opt.endDate : '', Gender: ev.gender, Event: ev.event, Round: ev.round, Heat: heat,
-      Place: m[1] === '--' ? '' : m[1], School: school, Mark: cleanM, Wind: m[6] || '', Points: m[7] ? String(+(parseFloat(m[7]) * (opt.pointsFactor || 1)).toFixed(2)) : '',
-      _v: markValue(cleanM, ev.field), _field: ev.field, _relay: ev.relay };
-    if (ev.relay) { team = { base, legs: [] }; out.push(team); }
-    else { const g = gr(m[3]); out.push(Object.assign(base, { Athlete: flip(m[2]), Grade: g, GradYear: g && season ? +season + 12 - g : '', Leg: '' })); }
+  main {
+    overflow: visible !important;
+    flex: none !important;
+    display: block !important;
   }
-  const rows = [];
-  out.forEach(r => {
-    if (!r.legs) { rows.push(r); return; }
-    const legs = r.legs.length ? r.legs : [{ leg: '', name: '(relay)', grade: '' }];
-    const names = legs.map(l => l.name).join(' / ');
-    const tp = parseFloat(r.base.Points), share = isNaN(tp) ? '' : String(+(tp / legs.length).toFixed(4));
-    legs.forEach(l => rows.push(Object.assign({}, r.base, { Points: share, TeamPoints: isNaN(tp) ? '' : r.base.Points, Athlete: l.name, Grade: l.grade, GradYear: l.grade && season ? +season + 12 - l.grade : '', Leg: l.leg, _team: names })));
-  });
-  return rows;
+
+  main > section:first-of-type {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  #outputSection {
+    height: 100vh !important;
+    min-height: 600px;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  #outPreview, #outHtml, #outText {
+    font-size: 0.82rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .output-btn-row {
+    flex-wrap: wrap !important;
+    gap: 6px;
+  }
 }
 
-function bests(rows) {
-  const best = new Map();
-  rows.filter(r => !r._relay && r._v != null).forEach(r => {
-    const k = [r.Gender, r.Event, r.Athlete].join('|'), b = best.get(k);
-    if (!b || (r._field ? r._v > b._v : r._v < b._v)) best.set(k, r);
-  });
-  const teams = new Map();
-  rows.filter(r => r._relay && r._v != null).forEach(r => {
-    const k = [r.Meet, r.Gender, r.Event, r.Round, r.Place, r.Mark].join('|');
-    if (!teams.has(k)) teams.set(k, r);
-  });
-  const order = []; rows.forEach(r => { const k = r.Gender + '|' + r.Event; if (!order.includes(k)) order.push(k); });
-  const res = [];
-  order.forEach(k => {
-    const list = [...best.values()].filter(r => r.Gender + '|' + r.Event === k).sort((a, b) => a._field ? b._v - a._v : a._v - b._v);
-    list.forEach((r, i) => res.push({ Gender: r.Gender, Event: r.Event, Rank: i + 1, Athlete: r.Athlete, Grade: r.Grade, Mark: r.Mark, Meet: r.Meet, Date: r.Date, EndDate: r.EndDate }));
-    const tl = [...teams.values()].filter(r => r.Gender + '|' + r.Event === k).sort((a, b) => a._v - b._v).slice(0, 5);
-    tl.forEach((r, i) => res.push({ Gender: r.Gender, Event: r.Event, Rank: i + 1, Athlete: r._team || '(relay)', Grade: '', Mark: r.Mark, Meet: r.Meet, Date: r.Date, EndDate: r.EndDate }));
-  });
-  return res;
+#jumpToOutput {
+  display: none;
 }
-// PARSE_END
+@media (max-width: 1023px) {
+  #jumpToOutput {
+    display: flex;
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    z-index: 100;
+    align-items: center;
+    gap: 0.4rem;
+    background: #2563eb;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.6rem 1rem;
+    border-radius: 9999px;
+    box-shadow: 0 4px 18px rgba(37,99,235,0.45);
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  #jumpToOutput.hidden-btn {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+  }
+}
 
-const COLS = ['Season','Meet','Date','EndDate','Gender','Event','Round','Heat','Place','Athlete','Leg','Grade','GradYear','School','Mark','Wind','Points','Split','TeamPoints'];
-let ALL = [];
-const $ = id => document.getElementById(id);
-const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+@media print {
+  body, html, main {
+    background: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  header, 
+  section:first-of-type, 
+  #toast, 
+  #noData, 
+  .bg-slate-950.border-b, 
+  #paneHtml, 
+  #paneText {
+    display: none !important;
+  }
+  main {
+    display: block !important;
+  }
+  section:last-of-type {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+  }
+  #panePreview {
+    display: block !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    width: 100% !important;
+  }
+  #outPreview {
+    color: #000000 !important;
+    background: #ffffff !important;
+    text-shadow: none !important; 
+    font-size: 9.5pt !important;
+    line-height: 1.25 !important;
+    white-space: pre !important;
+    width: 100% !important;
+  }
+}
+</style>
+</head>
+<body class="h-full flex flex-col text-slate-800 dark:text-slate-100 transition-colors duration-200">
 
-const csv = (rows, cols) => [cols.join(',')].concat(rows.map(r => cols.map(c => {
-  const val = String(r[c] ?? '').replace(/"/g, '""');
-  return ['Mark', 'Split', 'Wind'].includes(c) && val ? `="` + val + `"` : `"` + val + `"`;
-}).join(','))).join('\r\n');
+<header class="bg-white dark:bg-black border-b border-slate-200 dark:border-slate-900 py-3 px-6 shrink-0 shadow-sm z-20">
+  <div class="max-w-7xl mx-auto flex flex-col xl:flex-row items-center justify-between gap-4">
+    <div class="flex items-center space-x-3">
+      <div id="logoBadge" class="relative bg-blue-600 text-white p-2.5 rounded-lg shadow-md flex items-center justify-center w-11 h-11">
+        <i id="logoIcon" class="fa-solid fa-stopwatch text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+          Track &amp; XC Flat HTML / AP Style Converter
+          <span id="modeBadge" class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">Track Mode</span>
+        </h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          Easily change results to look like HyTek Meet Manager Flat HTML Results.
+        </p>
+      </div>
+    </div>
+  </div>
+</header>
 
-function save(name, text) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv' })); a.download = name; a.click(); }
-function render() {
-  $('count').textContent = ALL.length + ' Perry rows';$('tbl').innerHTML = '<tr>' + COLS.map(c => '<th>' + c + '</th>').join('') + '</tr>' + ALL.slice(0, 400).map(r => '<tr>' + COLS.map(c => '<td>' + esc(r[c]) + '</td>').join('') + '</tr>').join('');
-}
-async function add() {
-  const base = { school: $('school').value.trim(), pointsFactor: +$('pcredit').value, season:$('season').value.trim() };
-  const dtxt = $('datetxt').value.trim();
-  if (!dtxt) { $('msg').textContent = 'Type the meet date first (like 5/27/26), so the site can put meets in order.'; return; }
-  const texts = []; for (const f of $('files').files) texts.push([f.name, await f.text()]);
-  if ($('paste').value.trim()) texts.push(['pasted text',$('paste').value]);
-  if (!texts.length) { $('msg').textContent = 'Choose a file or paste results first.'; return; }
-  const notes = []; let bad = false;
-  texts.forEach(([n, t]) => {
-    if (bad) return;
-    const title = ((t.replace(/<[^>]+>/g, '').split(/\r?\n/).find(l => l.trim()) || '').match(/(20\d\d)/) || [])[1];
-    const d = parseDateText(dtxt, base.season || title);
-    if (d.err) { notes.push(d.err); bad = true; return; }
-    const r = parseHytek(t, Object.assign({}, base, { date: d.start, endDate: d.end }));
-    if (!r.length) { notes.push(n + ': no "' + base.school + '" rows found'); return; }
-    const dup = ALL.length && ALL.some(x => x.Meet === r[0].Meet && x.Date === r[0].Date);
-    if (dup) { notes.push(n + ': this meet is already loaded, skipped'); return; }
-    ALL = ALL.concat(r); notes.push(n + ': ' + r.length + ' rows (' + d.start + (d.end ? ' to ' + d.end : '') + ')');
-  });
-  $('msg').textContent = notes.join(' | ');
-  if (bad) return;
-  $('files').value = '';$('paste').value = ''; $('datetxt').value = '';$('pcredit').value = '1'; render();
-}
-function printable() {
-  const b = bests(ALL); let h = '<h1>Perry Track &amp; Field - Season Bests</h1>', cur = '';
-  b.forEach(r => {
-    const k = r.Gender + ' ' + r.Event;
-    if (k !== cur) { if (cur) h += '</table>'; cur = k; h += '<h2>' + esc(k) + '</h2><table><tr><th>#</th><th>Athlete</th><th>Gr</th><th>Mark</th><th>Meet</th></tr>'; }
-    h += '<tr><td>' + r.Rank + '</td><td>' + esc(r.Athlete) + '</td><td>' + r.Grade + '</td><td>' + esc(r.Mark) + '</td><td>' + esc(r.Meet) + '</td></tr>';
-  });
-  $('print').innerHTML = h + (cur ? '</table>' : '');
-}
-$('add').onclick = add;
-$('clear').onclick = () => { ALL = []; render();$('msg').textContent = ''; };
-$('dl1').onclick = () => ALL.length ? save('perry-results-log.csv', csv(ALL, COLS)) : ($('msg').textContent = 'Nothing loaded yet.');
-$('dl2').onclick = () => ALL.length ? save('perry-bests.csv', csv(bests(ALL), ['Gender','Event','Rank','Athlete','Grade','Mark','Meet','Date','EndDate'])) : ($('msg').textContent = 'Nothing loaded yet.');
-$('pr').onclick = () => { if (!ALL.length) {$('msg').textContent = 'Nothing loaded yet.'; return; } printable(); window.print(); };
-render();
-</script></body></html>
+<main class="flex-1 overflow-hidden flex flex-col lg:flex-row">
+
+  <!-- LEFT: Input + Settings -->
+  <section class="w-full lg:w-2/5 flex flex-col border-r border-slate-200 dark:border-slate-900 h-full overflow-y-auto cs bg-slate-50/50 dark:bg-black">
+    <div class="p-6 space-y-5 max-w-3xl mx-auto w-full">
+
+      <!-- Step 1: Meet Headers -->
+      <div class="bg-white dark:bg-slate-950 p-5 rounded-xl border border-slate-200 dark:border-slate-900 shadow-sm space-y-4">
+        <div id="step1Header" class="flex items-center space-x-2 text-blue-600 dark:text-blue-400 font-bold text-sm uppercase tracking-wider">
+          <span id="step1Badge" class="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-xs">1</span>
+          <span>Meet Headers</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Meet Title</label>
+            <input type="text" id="meetTitle" class="w-full px-3 py-2 bg-slate-50 dark:bg-black border border-slate-200 dark:border-slate-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Stark County Championship">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Venue / Subtitle</label>
+            <input type="text" id="meetVenue" class="w-full px-3 py-2 bg-slate-50 dark:bg-black border border-slate-200 dark:border-slate-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Perry High School">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Date</label>
+            <input type="text" id="meetDate" class="w-full px-3 py-2 bg-slate-50 dark:bg-black border border-slate-200 dark:border-slate-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. 10/12/2026">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Sport</label>
+            <div class="flex rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 w-full">
+              <button id="sportToggleTrack" type="button" class="flex-1 py-2 px-4 text-sm font-semibold flex items-center justify-center gap-2 bg-blue-600 text-white">
+                <i class="fa-solid fa-stopwatch"></i> Track
+              </button>
+              <button id="sportToggleXC" type="button" class="flex-1 py-2 px-4 text-sm font-semibold flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                <i class="fa-solid fa-person-running"></i> Cross Country
+              </button>
+            </div>
+          </div>
+
+          <input type="hidden" id="meetType" value="track">
+
+          <div id="trackScoringRow" class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Track Scoring Rule</label>
+            <select id="trackScoringType" class="w-full px-3 py-2 bg-slate-50 dark:bg-black border border-slate-200 dark:border-slate-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="standard">Invitational Scoring (8-place: 10-8-6-5-4-3-2-1)</option>
+              <option value="seven_place">7-Place Scoring (10-8-6-4-3-2-1)</option>
+              <option value="six_team">6-Team Meet Scoring (10-8-6-4-2-1 | Relays: 10-8-6-4-2)</option>
+              <option value="five_team">5-Team Meet Scoring (8-6-4-2-1 | Relays: 8-6-4-2)</option>
+              <option value="quad">Quad Meet Scoring (6-4-3-2-1 | Relays: 6-4-2)</option>
+              <option value="tri">Tri-Meet Scoring (5-3-2-1 | Relays: 5-3)</option>
+              <option value="dual">Dual Meet Scoring (5-3-1 | Relays: 5-0)</option>
+            </select>
+          </div>
+
+          <div id="xcScoringRow" class="md:col-span-2 hidden">
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Cross Country Scoring Type</label>
+            <select id="xcScoringType" class="w-full px-3 py-2 bg-slate-50 dark:bg-black border border-slate-200 dark:border-slate-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+              <option value="cross_country" selected>Standard XC Scoring (High School)</option>
+              <option value="college_xc">College / Collegiate XC (TFRRS &amp; NCAA Tiebreaker)</option>
+            </select>
+          </div>
+          <div class="md:col-span-2 hidden" id="xcRaceHeaderContainer">
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Custom XC Race Header</label>
+            <input type="text" id="xcRaceHeader" class="w-full px-3 py-2 bg-slate-50 dark:bg-black border border-slate-200 dark:border-slate-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Boys Division 1 Varsity 5K">
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-4 pt-1">
+          <label class="flex items-center text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer">
+            <input type="checkbox" id="flipNamesCheck" checked class="w-4 h-4 text-blue-600 rounded mr-2"> Format Names: Last, First
+          </label>
+          <label class="flex items-center text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer">
+            <input type="checkbox" id="girlsFirstCheck" checked class="w-4 h-4 text-blue-600 rounded mr-2"> <span id="girlsFirstLabel">Girls events before Boys</span>
+          </label>
+          <label class="flex items-center text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer">
+            <input type="checkbox" id="showResultsLabelCheck" checked class="w-4 h-4 text-blue-600 rounded mr-2"> Include "Results" centered header
+          </label>
+        </div>
+      </div>
+
+      <!-- Step 2: Paste Area -->
+      <div class="bg-white dark:bg-slate-950 p-5 rounded-xl border border-slate-200 dark:border-slate-900 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <div id="step2Header" class="flex items-center space-x-2 text-blue-600 dark:text-blue-400 font-bold text-sm uppercase tracking-wider">
+            <span id="step2Badge" class="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-xs">2</span>
+            <span>Paste Results or Upload File</span>
+          </div>
+          <button id="clearBtn" class="text-xs text-rose-500 hover:text-rose-600 font-medium flex items-center gap-1">
+            <i class="fa-solid fa-trash-can"></i> Clear
+          </button>
+        </div>
+        
+        <div id="dropZone" class="relative rounded-lg border border-dashed border-slate-200 dark:border-slate-900 p-1">
+          <textarea id="rawInput" rows="12" class="w-full px-3 py-2 font-mono text-xs bg-slate-50 dark:bg-black border-0 rounded-lg focus:outline-none focus:ring-0 cs block" placeholder="Paste full results here or drop a .txt/.html file…"></textarea>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <label class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2 transition">
+            <i class="fa-solid fa-file-import"></i> Upload File
+            <input type="file" id="fileInput" class="hidden" accept=".txt,.html,.htm,.csv">
+          </label>
+          <button id="processBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg text-sm shadow-md flex items-center gap-2 transition">
+            <i class="fa-solid fa-gears"></i> Build Hy-Tek File
+          </button>
+        </div>
+      </div>
+
+      <!-- Console Log -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
+        <button id="consoleToggle" class="w-full flex items-center justify-between text-xs font-semibold text-slate-300 uppercase tracking-wider">
+          <span class="flex items-center gap-2"><i class="fa-solid fa-terminal text-blue-500"></i> Status Console</span>
+        </button>
+        <div id="consoleLog" class="pt-2 border-t border-slate-800 text-[10px] font-mono text-amber-400 space-y-0.5 max-h-40 overflow-y-auto cs">
+          <div class="text-slate-500">> System Ready...</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: Output Panel -->
+  <section id="outputSection" class="w-full lg:w-3/5 flex flex-col h-full bg-slate-100 dark:bg-black text-slate-800 dark:text-slate-100 border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-slate-900 overflow-hidden">
+    <div class="bg-slate-50 dark:bg-slate-950/40 border-b border-slate-200 dark:border-slate-900 flex flex-col sm:flex-row items-center justify-between px-6 py-3 shrink-0 gap-2">
+      <div class="flex items-center gap-2">
+        <div class="flex space-x-1">
+          <button id="tabPreview" class="px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-600 text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-desktop"></i> Preview
+          </button>
+          <button id="tabHtml" class="px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-code"></i> HTML Source
+          </button>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-1.5 output-btn-row">
+        <button id="copyBtn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium">
+          <i class="fa-regular fa-copy mr-1"></i>Copy
+        </button>
+        <button id="downloadBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium">
+          <i class="fa-solid fa-download mr-1"></i>Save .htm
+        </button>
+      </div>
+    </div>
+
+    <div class="flex-1 p-4 overflow-hidden flex flex-col relative">
+      <div id="noData" class="absolute inset-0 bg-slate-100/95 dark:bg-black/95 flex flex-col items-center justify-center text-center p-6 z-10">
+        <div class="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center mb-4 text-blue-500">
+          <i class="fa-solid fa-file-import text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-bold">Ready to Convert</h3>
+        <p class="text-slate-500 dark:text-slate-400 text-xs mt-2 max-w-sm">Paste results on the left, then click Build Hy-Tek File.</p>
+      </div>
+
+      <div id="panePreview" class="flex-1 overflow-auto bg-white dark:bg-black rounded-xl border border-slate-200 dark:border-slate-900 p-4 cs hidden">
+        <pre id="outPreview" class="whitespace-pre font-mono text-xs preview-text"></pre>
+      </div>
+      <div id="paneHtml" class="flex-1 overflow-auto bg-slate-50 dark:bg-black rounded-xl border border-slate-200 dark:border-slate-900 p-4 cs hidden">
+        <pre id="outHtml" class="whitespace-pre-wrap font-mono text-xs text-slate-700 dark:text-slate-300 select-all"></pre>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// Tab Switching & Sport Toggle Logic
+const sportToggleTrack = document.getElementById('sportToggleTrack');
+const sportToggleXC = document.getElementById('sportToggleXC');
+const trackScoringRow = document.getElementById('trackScoringRow');
+const xcScoringRow = document.getElementById('xcScoringRow');
+const xcRaceHeaderContainer = document.getElementById('xcRaceHeaderContainer');
+const meetType = document.getElementById('meetType');
+const modeBadge = document.getElementById('modeBadge');
+const logoIcon = document.getElementById('logoIcon');
+
+sportToggleTrack.addEventListener('click', () => {
+  sportToggleTrack.className = 'flex-1 py-2 px-4 text-sm font-semibold flex items-center justify-center gap-2 bg-blue-600 text-white';
+  sportToggleXC.className = 'flex-1 py-2 px-4 text-sm font-semibold flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400';
+  trackScoringRow.classList.remove('hidden');
+  xcScoringRow.classList.add('hidden');
+  xcRaceHeaderContainer.classList.add('hidden');
+  meetType.value = 'track';
+  modeBadge.textContent = 'Track Mode';
+  logoIcon.className = 'fa-solid fa-stopwatch text-xl';
+});
+
+sportToggleXC.addEventListener('click', () => {
+  sportToggleXC.className = 'flex-1 py-2 px-4 text-sm font-semibold flex items-center justify-center gap-2 bg-[#ffdd00] text-gray-950';
+  sportToggleTrack.className = 'flex-1 py-2 px-4 text-sm font-semibold flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400';
+  trackScoringRow.classList.add('hidden');
+  xcScoringRow.classList.remove('hidden');
+  xcRaceHeaderContainer.classList.remove('hidden');
+  meetType.value = 'cross_country';
+  modeBadge.textContent = 'XC Mode';
+  logoIcon.className = 'fa-solid fa-person-running text-xl';
+});
+
+// Processing Logic
+const processBtn = document.getElementById('processBtn');
+const rawInput = document.getElementById('rawInput');
+const outPreview = document.getElementById('outPreview');
+const outHtml = document.getElementById('outHtml');
+const noData = document.getElementById('noData');
+const panePreview = document.getElementById('panePreview');
+const paneHtml = document.getElementById('paneHtml');
+const tabPreview = document.getElementById('tabPreview');
+const tabHtml = document.getElementById('tabHtml');
+
+processBtn.addEventListener('click', () => {
+  const text = rawInput.value.trim();
+  if (!text) {
+    alert('Please paste some results first!');
+    return;
+  }
+  
+  const title = document.getElementById('meetTitle').value || 'Meet Results';
+  const venue = document.getElementById('meetVenue').value || '';
+  const date = document.getElementById('meetDate').value || '';
+
+  let formattedText = `${title}\n${venue}\n${date}\n\n${text}`;
+
+  outPreview.textContent = formattedText;
+  outHtml.textContent = `<html><body><pre>${formattedText}</pre></body></html>`;
+
+  noData.classList.add('hidden');
+  panePreview.classList.remove('hidden');
+});
+
+tabPreview.addEventListener('click', () => {
+  panePreview.classList.remove('hidden');
+  paneHtml.classList.add('hidden');
+  tabPreview.className = 'px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-600 text-white flex items-center gap-1.5';
+  tabHtml.className = 'px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5';
+});
+
+tabHtml.addEventListener('click', () => {
+  paneHtml.classList.remove('hidden');
+  panePreview.classList.add('hidden');
+  tabHtml.className = 'px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-600 text-white flex items-center gap-1.5';
+  tabPreview.className = 'px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5';
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  rawInput.value = '';
+  noData.classList.remove('hidden');
+  panePreview.classList.add('hidden');
+  paneHtml.classList.add('hidden');
+});
+
+document.getElementById('copyBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(outPreview.textContent);
+  alert('Copied to clipboard!');
+});
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const blob = new Blob([outHtml.textContent], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'results.htm';
+  a.click();
+});
+</script>
+</body>
+</html>
