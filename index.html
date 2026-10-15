@@ -598,6 +598,12 @@ function isWheelchairEvent(name){
   return /(wheelchair|seated wheelchair|adaptive|para\b)/i.test(name||'');
 }
 
+// Team/relay-style events: the literal word "relay" doesn't always appear
+// (Shuttle Hurdles, and SMR/DMR when abbreviated), so check those too.
+function isRelayEvent(name){
+  return /relay|shuttle|medley|\bSMR\b|\bDMR\b/i.test(name||'');
+}
+
 function isScoreable(evtHeader, forceNonScoring=false) {
   if (forceNonScoring) return false;
   return !/(prelim|heat|semi|trial)/i.test(evtHeader);
@@ -1365,7 +1371,7 @@ function parseAthMeet(raw) {
 
         // Determine event kind
         let kind = 'running';
-        if (/relay/i.test(hdr.header)) kind = 'relay';
+        if (isRelayEvent(hdr.header)) kind = 'relay';
         else if (/jump|vault/i.test(hdr.header)) kind = 'field_vert_horiz';
         else if (/shot|discus|hammer|javelin|throw|weight/i.test(hdr.header)) kind = 'field_throw';
 
@@ -2136,7 +2142,7 @@ function parseAthMeet(raw) {
         const g = gm[1].toLowerCase();
         currentGender = (g.startsWith('girl') || g.startsWith('women')) ? 'girls' : 'boys';
         let kind = 'running';
-        if (/relay/i.test(line)) kind = 'relay';
+        if (isRelayEvent(line)) kind = 'relay';
         else if (/jump|vault/i.test(line)) kind = 'field_vert_horiz';
         else if (/put|discus|throw|hammer|javelin|shot/i.test(line)) kind = 'field_throw';
         const header = /\b(Finals|Prelims|Semis|Heats|Trials)\b/i.test(line) ? line : line + ' Finals';
@@ -2200,7 +2206,7 @@ function parseAthMeet(raw) {
         const g = adaptiveMatch[1].toLowerCase();
         currentGender = (g.startsWith('girl') || g.startsWith('women')) ? 'girls' : 'boys';
         let kind = 'running';
-        if (/relay/i.test(line)) kind = 'relay';
+        if (isRelayEvent(line)) kind = 'relay';
         else if (/jump|vault/i.test(line)) kind = 'field_vert_horiz';
         else if (/put|discus|throw|hammer|javelin|shot/i.test(line)) kind = 'field_throw';
         const gLabel = currentGender === 'girls' ? 'Girls' : 'Boys';
@@ -2224,7 +2230,7 @@ function parseAthMeet(raw) {
         currentGender = (g.startsWith('girl') || g.startsWith('women')) ? 'girls' : 'boys';
         
         let kind = 'running';
-        if (/relay/i.test(line)) kind = 'relay';
+        if (isRelayEvent(line)) kind = 'relay';
         else if (/jump|vault/i.test(line)) kind = 'field_vert_horiz';
         else if (/put|discus|throw|hammer|javelin/i.test(line)) kind = 'field_throw';
 
@@ -2520,7 +2526,7 @@ function parseAthMeet(raw) {
       if (evtHeader) {
         flushEvent();
         let kind = 'running';
-        if (/relay/i.test(evtHeader.toLowerCase())) kind = 'relay';
+        if (isRelayEvent(evtHeader)) kind = 'relay';
         else if (/jump|vault/i.test(evtHeader.toLowerCase())) kind = 'field_vert_horiz';
         else if (/put|discus|throw|hammer|javelin/i.test(evtHeader.toLowerCase())) kind = 'field_throw';
 
